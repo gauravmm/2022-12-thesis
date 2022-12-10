@@ -1,0 +1,29 @@
+\pgfplotstableread{LSDDM/figures/pendulum_results/nlinkerror_simple.dat}{\nlinkerrorsimple}
+\pgfplotstableread{LSDDM/figures/pendulum_results/nlinkerror_rehu.dat}{\nlinkerrorrehu}
+
+\begin{figure}
+    \begin{tikzpicture}[scale=1]
+        \begin{axis}[
+                axis on top,% ----
+                scale only axis,
+                enlargelimits=false,
+                xmin=.5, ymin=0, xmax=8.5,
+                width=5.0in,
+                height=1.404in,
+                xlabel={Number of links in pendulum},
+                ylabel={Error at 1000 timesteps},
+                ylabel near ticks,
+                legend pos=north west,
+                xtick=data]
+
+            \addplot+[y filter/.code={\pgfmathparse{#1/500}\pgfmathresult}]
+            table [x={n}, y={loss}] {\nlinkerrorsimple};
+            \addplot+[y filter/.code={\pgfmathparse{#1/500}\pgfmathresult}]
+            table [x={n}, y={loss}] {\nlinkerrorrehu};
+            \legend{Simple Model,Stable Model}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Error in predicting $
+            \theta, \dot \theta$ as the number of links in the pendulum increases.}
+    \label{fig:nlink_results}
+\end{figure}

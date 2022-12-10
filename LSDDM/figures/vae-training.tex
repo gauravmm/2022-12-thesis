@@ -1,0 +1,33 @@
+
+\begin{figure}
+    \begin{tikzpicture}
+        \begin{axis}[
+                axis on top,% ----
+                scale only axis,
+                enlargelimits=false,
+                xmin=0, ymin=0,
+                xmax=527.577, ymax=134.747,
+                width=5.5in,
+                height=1.404in,
+                yticklabels={,,},
+                xticklabels={,,},
+                axis line style={draw=none},
+                tick style={draw=none}]
+            \addplot[] graphics[xmin=0, ymin=0, xmax=527.577, ymax=134.747] {LSDDM/figures/vidtex-2/model-training-blank.png};
+            \node (A) [anchor=north] at (axis cs:40,74){$e(y_t)$};
+            \node (D) [anchor=south west] at (axis cs:66,102){$\mu_t$};
+            \node (E) [anchor=north west] at (axis cs:66,82){$\log\sigma_t$};
+            \node (H) [anchor=south west] at (axis cs:160,64){\small{$\hat f(z_t)$}};
+            \node (H) [anchor=south west] at (axis cs:160,28){\small{$V(z_t)$}};
+            \node (F) [anchor=south] at (axis cs:196,92){$z_t \in \mathcal{N}(\mu_t,\sigma_t^2)$};
+            \node (J) [anchor=south] at (axis cs:286,35){\footnotesize{$z_{t+1} \gets z_t + f(z_t)$}};
+            \node (B) [anchor=north east] at (axis cs:392,72){\footnotesize{$d(z_t)$}};
+            \node (B) [anchor=north east] at (axis cs:392,20){\footnotesize{$d(z_{t+1})$}};
+            \node (I) [anchor=west] at (axis cs:380,118){{KL}($\mathcal{N}(\mu_t,\sigma_t^2)\| \mathcal{N}(0,I))$};
+            \node (K) [anchor=west] at (axis cs:396,82){$\|d(z_t) - y_{t}\|_2^2$};
+            \node (K) [anchor=west] at (axis cs:396,28){$\|d(z_{t+1}) - y_{t+1}\|_2^2$};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Structure of our video texture generation network. The encoder $e$ and decoder $d$ form a Variational Autoencoder, and the stable dynamics model $f$ is trained together with the decoder to predict the next frame in the video texture.}
+    \label{fig:vae_training}
+\end{figure}

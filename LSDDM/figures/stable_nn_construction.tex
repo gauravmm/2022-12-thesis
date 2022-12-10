@@ -1,0 +1,55 @@
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \begin{groupplot}[
+                group style={
+                        group name=my plots,
+                        group size=4 by 1,
+                        ylabels at=edge left,
+                        yticklabels at=edge left,
+                        horizontal sep=12pt
+                    },
+                axis on top,% ----
+                width=1.3in,
+                height=1.3in,
+                scale only axis,
+                enlargelimits=false,
+                xmin=0,
+                xmax=1,
+                ymin=0,
+                ymax=1,
+                yticklabels={,,},
+                xticklabels={,,}
+            ]
+
+            \nextgroupplot[title={Trajectory and Lyapunov function}]
+            \addplot[] graphics[xmin=0,ymin=0,xmax=1,ymax=1] {LSDDM/figures/explanation/process-components.png};
+            \node[anchor=west] (A) at (axis cs:0.1,0.85){\textbullet $x_e$};
+            \node (B) at (axis cs:0.65,0.2){increasing $V$};
+            \draw[->](A)--(B);
+            \node[anchor=north] (C) at (axis cs:0.705,0.64){\textbullet $ x$};
+
+            \nextgroupplot[title={Case 1}]
+            \addplot[] graphics[xmin=0,ymin=0,xmax=1,ymax=1] {LSDDM/figures/explanation/process-components.png};
+            \node[anchor=north] (C) at (axis cs:0.705,0.64){\textbullet \phantom{$ x$}};
+            \node[inner sep=0pt] (A) at (axis cs:0.67,0.6){};
+            \node[inner sep=2pt] (B) at (axis cs:0.7,0.1){};
+            \draw [->] (A) -- node [midway,right] {$\hat f( x)$} (B);
+            \node[inner sep=2pt] (D) at (axis cs:0.4,0.34){};
+            \draw [->] (B) -- node [midway,left] {$-g( x)$} (D);
+            \draw [->] (A) -- node [midway,left] {$f( x)$} (D);
+
+            \nextgroupplot[title={Case 2}]
+            \addplot[] graphics[xmin=0,ymin=0,xmax=1,ymax=1] {LSDDM/figures/explanation/process-components.png};
+            \node[anchor=north] (C) at (axis cs:0.705,0.64){\textbullet \phantom{$ x$}};
+            \node[inner sep=0pt] (A) at (axis cs:0.67,0.6){};
+            \node[inner sep=2pt] (D) at (axis cs:0.4,0.55){};
+            \node[inner sep=2pt] (E) at (axis cs:0.47,0.84){$g( x)$};
+            \draw [->] (A) -- node [midway,below] {$f( x) = \hat f( x)$} (D);
+            \draw [->] (A) -- (E);
+        \end{groupplot}
+    \end{tikzpicture}
+    \caption{We plot the trajectory and the contour of a Lyapunov function of a stable dynamical system and illustrate our method. Let $g( x) = \frac{\nabla V(x)}{\|\nabla V(x)\|_2^2} \mathrm{ReLU}\left(\nabla V(x)^T \hat{f}(x) + \alpha V (x)\right)$. In the first case $\hat f( x)$ has a component $g( x)$ not in the halfspace, which we subtract to obtain $f( x)$. In the second case $\hat f( x)$ is already in the halfspace, so is returned unchanged.}
+    \label{fig:stable_nn_construction}
+\end{figure}

@@ -1,0 +1,36 @@
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \begin{groupplot}[
+                group style={
+                        group name=my plots,
+                        group size=4 by 1,
+                        ylabels at=edge left,
+                        yticklabels at=edge left,
+                        horizontal sep=18pt
+                    },
+                axis on top,% ----
+                width=1.in,
+                height=1.in,
+                scale only axis,
+                enlargelimits=false,
+                xmin=-2,
+                xmax=2,
+                ymin=-2,
+                ymax=2,
+            ]
+
+            \nextgroupplot[title={Simulated}]
+            \addplot[] graphics[xmin=-2,ymin=-2,xmax=2,ymax=2] {LSDDM/figures/pendulum/true-stream.eps};
+            \nextgroupplot[title={Learned $f$}]
+            \addplot[] graphics[xmin=-2,ymin=-2,xmax=2,ymax=2] {LSDDM/figures/pendulum/nn-stream.eps};
+            \nextgroupplot[title={Learned $V$}]
+            \addplot[] graphics[xmin=-2,ymin=-2,xmax=2,ymax=2] {LSDDM/figures/pendulum/nn-lyapunov.eps};
+            \nextgroupplot[axis equal image, axis lines=none, xtick=\empty, ytick=\empty]
+            \addplotgraphicsnatural [xmin=-2, xmax=2, ymin=-2, ymax=2] {LSDDM/figures/pendulum/nn-lyapunov-cmap.eps};
+        \end{groupplot}
+    \end{tikzpicture}
+    \caption{Dynamics of a simple damped pendulum. From left to right: the dynamics as simulated from first principles, the dynamics model $f$ learned by our method, and the Lyapunov function $V$ learned by our method (under which $f$ is non-expansive).}
+    \label{fig:pendulum_experiment}
+\end{figure}{}

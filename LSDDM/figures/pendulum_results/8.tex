@@ -1,0 +1,23 @@
+\pgfplotstableread{LSDDM/figures/pendulum_results/8_simple.dat}{\pendressimple}
+\pgfplotstableread{LSDDM/figures/pendulum_results/8_REHU_0.005.dat}{\pendressrehu}
+
+\begin{figure}
+    \begin{tikzpicture}[scale=1]
+        \begin{axis}[
+                axis on top,% ----
+                scale only axis,
+                enlargelimits=false,
+                xmin=0, ymin=0,
+                xmax=1000,
+                width=5.0in,
+                height=1.404in,
+                ylabel near ticks,
+                legend pos=north west]
+
+
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Error in predicting $
+            \theta, \dot \theta$ in 8-link pendulum over time.}
+    \label{fig:link_8_results}
+\end{figure}

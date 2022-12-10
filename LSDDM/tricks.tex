@@ -1,0 +1,31 @@
+
+% Display graphics in pgfplots without deformation: https://tex.stackexchange.com/a/338627
+\makeatletter
+\newcommand\addplotgraphicsnatural[2][]{%
+    \begingroup
+    % set options in this local group (will be lost afterwards):
+    \pgfqkeys{/pgfplots/plot graphics}{#1}%
+    % measure the natural size of the graphics:
+    \setbox0=\hbox{\includegraphics{#2}}%
+    %
+    % compute the required unit vector ratio:
+    \pgfmathsetmacro{\xfactor}{\wd0/(\pgfkeysvalueof{/pgfplots/plot graphics/xmax} - \pgfkeysvalueof{/pgfplots/plot graphics/xmin})}%
+    \pgfmathsetmacro{\yfactor}{\ht0/(\pgfkeysvalueof{/pgfplots/plot graphics/ymax} - \pgfkeysvalueof{/pgfplots/plot graphics/ymin})}\yfactor%
+    % The smaller of the unit vectors should be 1, so the other needs to be scaled appropriately
+    \pgfmathsetmacro{\xunit}{\xfactor<\yfactor ? 1 : \xfactor/\yfactor}
+    \pgfmathsetmacro{\yunit}{\xfactor<\yfactor ? \yfactor/\xfactor : 1}
+    %
+    % configure pgfplots to use it.
+    % The \xdef expands all macros except those prefixed by '\noexpand'
+    % and assigns the result to a global macro named '\marshal'.
+    \xdef\marshal{%
+        \noexpand\pgfplotsset{unit vector ratio*={\xunit\space \yunit}}%
+    }%
+    \endgroup
+    %
+    % use our macro here:
+    \marshal
+    %
+    \addplot graphics[#1] {#2};
+}   
+\makeatother

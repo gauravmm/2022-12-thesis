@@ -1,0 +1,56 @@
+\pgfplotstableread{LSDDM/figures/pendulum_results/nlinkerror_simple.dat}{\nlinkerrorsimple}
+\pgfplotstableread{LSDDM/figures/pendulum_results/nlinkerror_rehu.dat}{\nlinkerrorrehu}
+\pgfplotstableread{LSDDM/figures/pendulum_results/8_simple.dat}{\pendressimple}
+\pgfplotstableread{LSDDM/figures/pendulum_results/8_REHU_0.005.dat}{\pendressrehu}
+\pgfplotstableread{LSDDM/figures/pendulum_results/8_lstm.dat}{\pendresslstm}
+
+\begin{figure}
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{groupplot}[
+                    group style={
+                            group name=my plots,
+                            group size=2 by 1,
+                            ylabels at=edge left,
+                            yticklabels at=edge left,
+                            horizontal sep=12pt
+                        },
+                    axis on top,% ----
+                    height=1.2in,
+                    width=2.35in,
+                    scale only axis,
+                    enlargelimits=false,
+                    ymode=log
+                ]
+
+                \nextgroupplot[title={\shortstack{Error at each time\\ for 8-link pendulums}},
+                    axis on top,% ----
+                    scale only axis,
+                    enlargelimits=false,
+                    xmin=0, xmax=1000, ymin=100, ymax=100000,
+                    ylabel near ticks,
+                    legend pos=north west,
+                    xlabel={Timestamp},
+                    ylabel={Error}]
+
+                \addplot+[]
+                table [x={t}, y={loss}] {\pendressimple};
+                \addplot+[]
+                table [x={t}, y={loss}] {\pendressrehu};
+                \legend{Simple,Stable}
+
+                \nextgroupplot[title={\shortstack{Average error over 999 timesteps\\ for $n$-link pendulums}},
+                    xmin=0.5, xmax=8.5,
+                    ymin=10000, ymax=100000000,
+                    xlabel={Number of links $n$}, xtick=data]
+                \addplot+[] table [x={n}, y={loss}] {\nlinkerrorsimple};
+                \addplot+[] table [x={n}, y={loss}] {\nlinkerrorrehu};
+
+            \end{groupplot}
+        \end{tikzpicture}
+    \end{center}
+
+    \caption{Error in predicting $
+            \theta, \dot \theta$ in 8-link pendulum at each timestep (left); and average error over 999 timesteps as the number of links in the pendulum increases (right).}
+    \label{fig:pendulum_results}
+\end{figure}
