@@ -1,0 +1,22 @@
+\begin{tikzpicture}
+    \begin{axis}[
+            width=\textwidth,
+            height=0.6\textwidth,
+            ymin=1.0,
+            ymax=4.0,
+            xmin=0.00001,
+            xmax=1,
+            xlabel={Regularization parameter $\eta$},
+            xmode=log,
+        ]
+        \addplot[color=viridis02,very thick] table [x=eta, y=mean] {Pitfalls/multilayerperf_k/etas_p_0.95_k_3.dat};
+        \addplot[color=viridis03,thick] table [x=eta, y=mean] {Pitfalls/multilayerperf_k/etas_p_0.95_k_5.dat};
+        \addplot[color=viridis04,thick] table [x=eta, y=mean] {Pitfalls/multilayerperf_k/etas_p_0.95_k_7.dat};
+        \addplot[color=viridis05,thick] table [x=eta, y=mean] {Pitfalls/multilayerperf_k/etas_p_0.95_k_9.dat};
+        \addplot[color=viridis06,thick] table [x=eta, y=mean] {Pitfalls/multilayerperf_k/etas_p_0.95_k_11.dat};
+        \addplot[color=viridis07,thick] table [x=eta, y=mean] {Pitfalls/multilayerperf_k/etas_p_0.95_k_13.dat};
+        \addplot[color=viridis08,thick] table [x=eta, y=mean] {Pitfalls/multilayerperf_k/etas_p_0.95_k_64.dat};
+
+        \addplot[dashed,color=black] table [x=eta, y=v0err] {Pitfalls/multilayerperf/basic.dat};
+    \end{axis}
+\end{tikzpicture}

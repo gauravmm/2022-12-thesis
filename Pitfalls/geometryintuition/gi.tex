@@ -1,0 +1,79 @@
+\begin{tikzpicture}[]
+    \begin{axis}[
+        width=\textwidth, height=\textwidth,
+        xmin=-2.5, xmax=2.5, ymin=-2.5, ymax=2.5,
+        axis equal,
+        xticklabels={,,}, yticklabels={,,},
+    ]
+        \draw[fill=black] (axis cs: 0,0) circle (1pt) node[anchor=south east]{$0$};
+        \draw[fill=gray,fill opacity=0.1,dashed,draw=gray,thin] (axis cs: 1,-1) circle (1.414);
+        \draw[black,->] (axis cs: 0,0)--(1,-1) node[anchor=south west]{$\hat w$};
+        \draw[gray!70,thick] (-4,-4) -- (4,4);
+
+        \begin{scope}[
+            /pgfplots/filter point/.code={%
+                \pgfkeysgetvalue{/data point/x}\X
+                \pgfkeysgetvalue{/data point/y}\Y
+                % Mirror across (1 -1):
+                %
+                \pgfmathparse{max(min(\Y*2, 10), -10)}
+                \let\outX=\pgfmathresult
+                %
+                \pgfmathparse{max(min(-\X*2, 10), -10)}
+                \let\outY=\pgfmathresult
+                %
+                \pgfkeyslet{/data point/x}\outX
+                \pgfkeyslet{/data point/y}\outY
+            },
+        ]
+            \addplot[color=viridis03,thick] table [x=x, y=y] {Pitfalls/geometryintuition/data/geometric_a.dat} node[currarrow,pos=0.87,xscale=-1,sloped,] {} node[currarrow,pos=0.95,xscale=1,sloped,] {};
+        \end{scope}
+        \node[color=viridis03, anchor=north east] at (axis cs: 0,2) {(1)};
+
+
+        \begin{scope}[
+            /pgfplots/filter point/.code={%
+                \pgfkeysgetvalue{/data point/x}\X
+                \pgfkeysgetvalue{/data point/y}\Y
+                % Pre-scaling
+                \pgfmathparse{\X*3}
+                \let\X=\pgfmathresult
+                \pgfmathparse{\Y*3}
+                \let\Y=\pgfmathresult
+                % Stretching
+                \pgfmathparse{(0.5+4)*\X+(0.5-4)*\Y}
+                \let\outX=\pgfmathresult
+                \pgfmathparse{(0.5-4)*\X+(0.5+4)*\Y}
+                \let\outY=\pgfmathresult
+                %
+                \pgfkeyslet{/data point/x}\outX
+                \pgfkeyslet{/data point/y}\outY
+          },
+        ]
+            \addplot[color=viridis06,thick] table [x=x, y=y] {Pitfalls/geometryintuition/data/geometric_b.dat} node[currarrow,pos=0.98,xscale=1,sloped,] {} node[currarrow,pos=0.995,xscale=1,sloped,] {};
+        \end{scope}
+        \node[color=viridis06, anchor=north west] at (axis cs: -.6,-1.6) {(2)};
+
+
+        \begin{scope}[
+            /pgfplots/filter point/.code={%
+                \pgfkeysgetvalue{/data point/x}\X
+                \pgfkeysgetvalue{/data point/y}\Y
+                %
+                \pgfmathparse{\X*1}
+                \let\outX=\pgfmathresult
+                %
+                \pgfmathparse{\Y*1}
+                \let\outY=\pgfmathresult
+                %
+                \pgfkeyslet{/data point/x}\outX
+                \pgfkeyslet{/data point/y}\outY
+          },
+        ]
+            \addplot[color=viridis09,thick] table [x=x, y=y] {Pitfalls/geometryintuition/data/geometric_c1.dat} node[currarrow,pos=0.2,xscale=1,sloped,] {};
+            \addplot[color=viridis09,thick] table [x=x, y=y] {Pitfalls/geometryintuition/data/geometric_c2.dat} node[currarrow,pos=0.88,xscale=1,sloped,] {} node[currarrow,pos=0.96,xscale=1,sloped,] {};
+        \end{scope}
+        \node[color=viridis09, anchor=south west] at (axis cs: 1.864,-1.393) {(3)};
+
+    \end{axis}
+\end{tikzpicture}

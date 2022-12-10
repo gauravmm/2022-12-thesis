@@ -1,0 +1,77 @@
+
+
+\begin{tikzpicture}
+    \begin{groupplot}[
+            group style={
+                    group size=1 by 3,
+                    x descriptions at=edge bottom,
+                    vertical sep=0pt,
+                },
+            scale only axis,
+            width=\textwidth-8mm,
+            height=1.33cm,
+            tick align=outside,
+            enlargelimits=false,
+            xmin=0.000000001,
+            xmax=1,
+            xmode=log,
+            xlabel={Regularization parameter $\eta$},
+            x tick label style={font=\small, yshift=0.5ex},
+            xtick align=inside,
+        ]
+
+
+        \nextgroupplot[
+            mark=none,
+            ymax=10000,
+            ymin=0.05,
+            ymode=log,
+            yticklabels={,,},
+            ytick style={draw=none},
+        ]
+        \node[anchor=south east,black] at (axis cs:.8, 2.25) {$\scriptstyle \|V\|$};
+        \draw[dashed,very thick,gray] (axis cs:0.000000001, 2.25) to[] (axis cs:1000, 2.25);
+
+        %\node[anchor=north east,black] at (axis cs:.8, 0.044) {$\epsilon$};
+        %\draw[dashed,very thick,gray] (axis cs:0.000000001, 0.044) to[] (axis cs:1000, 0.044);
+
+        \addplot[color=viridis06,thick] table [x=eta, y=err] {Pitfalls/smalleta/data/td_smalleta_B.dat};
+
+
+        \nextgroupplot[
+            mark=none,
+            ymax=10000,
+            ymin=0.05,
+            ymode=log,
+            yticklabels={,,},
+            ytick style={draw=none},
+            ylabel={TD error},
+            ylabel style={yshift=-3mm},
+        ]
+        \node[anchor=south east,black] at (axis cs:.8, 2.25) {$\scriptstyle \|V\|$};
+        \draw[dashed,very thick,gray] (axis cs:0.000000001, 2.25) to[] (axis cs:1000, 2.25);
+
+        %\node[anchor=north east,black] at (axis cs:.8, 0.044) {$\epsilon$};
+        %\draw[dashed,very thick,gray] (axis cs:0.000000001, 0.044) to[] (axis cs:1000, 0.044);
+
+        \addplot[color=viridis03,thick] table [x=eta, y=err] {Pitfalls/smalleta/data/td_smalleta_A.dat};
+
+
+        \nextgroupplot[
+            mark=none,
+            ymax=1000,
+            ymin=0.0001,
+            ymode=log,
+            yticklabels={,,},
+            ytick style={draw=none},
+        ]
+        \node[anchor=north east,black] at (axis cs:.8, 2.2) {$\scriptstyle \|V\|$};
+        \draw[dashed,very thick,gray] (axis cs:0.000000001, 2.2) to[] (axis cs:1000, 2.2);
+
+        %\node[anchor=north east,black] at (axis cs:.8, 0.044) {$\epsilon$};
+        %\draw[dashed,very thick,gray] (axis cs:0.000000001, 0.044) to[] (axis cs:1000, 0.044);
+
+        \addplot[color=viridis09,thick] table [x=eta, y=err] {Pitfalls/smalleta/data/td_smalleta_C.dat};
+
+    \end{groupplot}
+\end{tikzpicture}

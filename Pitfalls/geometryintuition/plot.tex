@@ -1,0 +1,39 @@
+\begin{tikzpicture}
+    \begin{axis}[
+            scale only axis,
+            width=\textwidth-10mm,
+            height=3.99cm,
+            tick align=outside,
+            enlargelimits=false,
+            mark=none,
+            ymax=100,
+            ymin=.1,
+            ymode=log,
+            xmin=0.000000001,
+            xmax=100,
+            xmode=log,
+            xlabel={Regularization parameter $\eta$},
+            ylabel={Error at convergence},
+            x tick label style={font=\small, yshift=0.5ex},
+            y tick label style={font=\small, xshift=0.5ex},
+            ytick align=inside,
+            xtick align=inside,
+        ]
+
+        \node[anchor=south east,black] at (axis cs:8., 2.635) {$\|V\|$};
+        \draw[dashed,very thick,gray] (axis cs:0.000000001, 2.635) to[] (axis cs:1000, 2.635);
+
+        \node[anchor=north east,black] at (axis cs:8., 0.044) {$\epsilon$};
+        \draw[dashed,very thick,gray] (axis cs:0.000000001, 0.044) to[] (axis cs:1000, 0.044);
+
+        \addplot[color=viridis03,thick] table [x=eta, y=err] {Pitfalls/geometryintuition/data/geometric_a.dat};
+        \node[color=viridis03, anchor=north east] at (axis cs: 0.0000001,60) {(1)};
+
+        \addplot[color=viridis06,thick] table [x=eta, y=err] {Pitfalls/geometryintuition/data/geometric_b.dat};
+        \node[color=viridis06, anchor=north east] at (axis cs: 0.0000001,14) {(2)};
+
+        \addplot[color=viridis09,thick] table [x=eta, y=err] {Pitfalls/geometryintuition/data/geometric_c.dat};
+        \node[color=viridis09, anchor=north east] at (axis cs: 0.0000001,0.4) {(3)};
+
+    \end{axis}
+\end{tikzpicture}

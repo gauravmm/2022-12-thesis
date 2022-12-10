@@ -1,0 +1,40 @@
+\begin{tikzpicture}
+    \begin{axis}[
+            scale only axis,
+            width=\textwidth-10mm,
+            height=3.99cm,
+            tick align=outside,
+            enlargelimits=false,
+            mark=none,
+            ymax=100,
+            ymin=0.01,
+            ymode=log,
+            xmin=0.000000001,
+            xmax=0.1,
+            xmode=log,
+            xlabel={Regularization parameter $\eta$},
+            %ylabel={TD error},
+            x tick label style={font=\small, yshift=0.5ex},
+            y tick label style={font=\small, xshift=0.5ex},
+            ytick align=inside,
+            xtick align=inside,
+        ]
+
+        \node[anchor=south east,black] at (axis cs:.08, 2.25) {$\|V\|$};
+        \draw[dashed,very thick,gray] (axis cs:0.000000001, 2.25) to[] (axis cs:1000, 2.25);
+
+        \node[anchor=north east,black] at (axis cs:.08, 0.044) {$\epsilon$};
+        \draw[dashed,very thick,gray] (axis cs:0.000000001, 0.044) to[] (axis cs:1000, 0.044);
+
+
+        \addplot[color=viridis03,thick] table [x=eta, y=err] {Pitfalls/fixedpoint/data/td_eta_A.dat};
+        \draw[dotted,very thick,viridis03!50] (axis cs:0.000000053088, 0.00001) to[] (axis cs:0.000000053088, 0.1748);
+
+        \addplot[color=viridis06,thick] table [x=eta, y=err] {Pitfalls/fixedpoint/data/td_eta_B.dat};
+        \draw[dotted,very thick,viridis06!50] (axis cs:0.0001258, 0.00001) to[] (axis cs:0.0001258, 1.2431);
+
+        \addplot[color=viridis09,thick] table [x=eta, y=err] {Pitfalls/fixedpoint/data/td_eta_C.dat};
+        \draw[dotted,very thick,viridis09!50] (axis cs:0.00000237137, 0.00001) to[] (axis cs:0.00000237137, 0.23783);
+
+    \end{axis}
+\end{tikzpicture}

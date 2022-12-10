@@ -1,0 +1,19 @@
+\begin{tikzpicture}
+    \begin{axis}[
+            width=\textwidth,
+            height=0.6\textwidth,
+            ymin=2.0,
+            ymax=4.0,
+            xmin=0.00001,
+            xmax=1,
+            xlabel={Regularization parameter $\eta$},
+            xmode=log,
+        ]
+        \addplot[color=viridis08,very thick] table [x=eta, y=mean] {Pitfalls/multilayerperf/etas_p_0.31.dat};
+        \addplot[color=viridis08,very thin,name path=lcb,] table [x=eta, y=conf_05] {Pitfalls/multilayerperf/etas_p_0.31.dat};
+        \addplot[color=viridis08,very thin,name path=ucb,] table [x=eta, y=conf_95] {Pitfalls/multilayerperf/etas_p_0.31.dat};
+        \addplot[viridis08!15] fill between[of=lcb and ucb];
+
+        \addplot[dashed,color=black] table [x=eta, y=v0err] {Pitfalls/multilayerperf/basic.dat};
+    \end{axis}
+\end{tikzpicture}

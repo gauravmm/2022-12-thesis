@@ -1,0 +1,46 @@
+\definecolor{viridis00}{RGB}{253, 231, 37}
+\definecolor{viridis01}{RGB}{181, 222, 43}
+\definecolor{viridis02}{RGB}{110, 206, 88}
+\definecolor{viridis03}{RGB}{53, 183, 121}
+\definecolor{viridis04}{RGB}{31, 158, 137}
+\definecolor{viridis05}{RGB}{38, 130, 142}
+\definecolor{viridis06}{RGB}{49, 104, 142}
+\definecolor{viridis07}{RGB}{62, 73, 137}
+\definecolor{viridis08}{RGB}{72, 40, 120}
+\definecolor{viridis09}{RGB}{68, 1, 84}
+
+\begin{tikzpicture}
+    \begin{axis}[
+        scale only axis,
+        width=\textwidth-10mm,
+        height=5cm,
+        tick align=outside,
+        enlargelimits=false,
+        ymode=log,
+        mark=none,
+        ymax=100,
+        xlabel={$p$ in sampling distribution $\mu=[\sfrac p2, \sfrac p2, 1-p]$},
+        yticklabels={,,},
+        ylabel={TD error},
+        ]
+        % \addplot[color=viridis09] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_1e-6.dat};
+        % \addplot[color=viridis08] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_1e-5.dat};
+        % \addplot[color=viridis07] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_5e-4.dat};
+        % \addplot[color=viridis06] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_2e-4.dat};
+        % \addplot[color=viridis05] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_1e-4.dat};
+        % \addplot[color=viridis04] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_5e-3.dat};
+        % \addplot[color=viridis03] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_2e-3.dat};
+        % \addplot[color=viridis02] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_1e-3.dat};
+        % \addplot[color=viridis01] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_1e-2.dat};
+        \addplot[color=black,thick,dashed] table [x=p, y=err] {Pitfalls/fixedpoint_p/eta_infty.dat} node[above,pos=0.06] {$\eta\to\infty$};
+        \addplot[color=red,thick] table [x=p, y=err] {Pitfalls/fixedpoint_p/data/td_1e-inf.dat} node[below,pos=0.002] {$\eta=0$};
+
+        % \node[anchor=south,rotate=90,gray] at (axis cs:0.51, 13.) {on-policy};
+        %\draw[dotted,very thick,gray] (axis cs:0.5, 0.0001) to[] (axis cs:0.5, 100);
+        \node[anchor=south west,rotate=90,gray] at (axis cs:0.725, .0002) {$p=0.715$};
+        \draw[dotted,very thick,gray] (axis cs:0.715, 0.0001) to[] (axis cs:0.715, 100);
+
+        %\draw[->,very thick] (axis cs:0.25, 0.01) to[bend left=-10] (axis cs:0.35, 1);
+        %\node[anchor=south,rotate=55] at (axis cs:0.30, 0.08) {Increasing $\eta$};
+    \end{axis}
+\end{tikzpicture}

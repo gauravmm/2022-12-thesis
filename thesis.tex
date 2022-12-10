@@ -33,6 +33,8 @@
 
 \input{latexhacks/linenomath.tex}
 \input{latexhacks/addplotgraphicsnatural.tex}
+\input{latexhacks/mathstyle.tex}
+\input{latexhacks/viridis.tex}
 
 %\newfontfamily\OpenSans{Open Sans}[Scale=MatchLowercase]
 %\newfontfamily\SourceSerifPro{Source Serif Pro}[Scale=MatchLowercase,Ligatures=TeX]
@@ -41,48 +43,25 @@
 \bibliography{biblio.bib}
 
 \pgfplotsset{compat=1.18}
-\usetikzlibrary{pgfplots.groupplots,positioning,fit,patterns,decorations.pathreplacing}
+\usetikzlibrary{pgfplots.groupplots,positioning,fit,patterns,decorations.pathreplacing,external}
+\usepackage{circuitikz}
 \usepgfplotslibrary{fillbetween}
 
+\tikzexternalize[prefix=tikz/]
 
 % Margins
-\topmargin=-4pt
-\evensidemargin=0in
-\oddsidemargin=0in
-\textwidth=6.5in
-\textheight=8.5in
-\headsep=0.15in
+% \topmargin=-4pt
+% \evensidemargin=0in
+% \oddsidemargin=0in
+% \textwidth=6.5in
+% \textheight=8.5in
+% \headsep=0.15in
 
 \onehalfspacing
-
-%\pagestyle{fancy}
-%\fancyhf{}
-%\lhead{Gaurav Manek}
-%\rhead{\thepage}
-%\rfoot{\thepage}
 
 \title{ Temporal Difference Learning and Stable Models }
 \author{ Gaurav Manek }
 \date{\today}
-
-\newcommand{\E}{\textbf{E}}
-\newcommand{\diag}{\text{diag}}
-\newcommand{\tr}{\text{tr}}
-\newcommand{\subsectionsubtitle}[1]{\vspace{-0.5em}\textit{#1}\vspace{0.5em}}
-
-% Color Scheme
-\definecolor{viridis00}{RGB}{253, 231, 37}
-\definecolor{viridis01}{RGB}{181, 222, 43}
-\definecolor{viridis02}{RGB}{110, 206, 88}
-\definecolor{viridis03}{RGB}{53, 183, 121}
-\definecolor{viridis04}{RGB}{31, 158, 137}
-\definecolor{viridis05}{RGB}{38, 130, 142}
-\definecolor{viridis06}{RGB}{49, 104, 142}
-\definecolor{viridis07}{RGB}{62, 73, 137}
-\definecolor{viridis08}{RGB}{72, 40, 120}
-\definecolor{viridis09}{RGB}{68, 1, 84}
-
-\AddToHook{cmd/section/before}{\clearpage}
 
 \begin{document}
 \frontmatter
@@ -174,6 +153,8 @@ A natural application area for such an algorithm is in offline/batch RL, in whic
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{The Pitfalls of Regularization in Off-Policy TD}
+
+\input{Pitfalls/rr.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Projected Off-Policy TD for Offline RL}

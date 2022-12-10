@@ -1,0 +1,29 @@
+\begin{tikzpicture}
+    \begin{axis}[
+            width=\textwidth,
+            height=0.6\textwidth,
+            ymin=0.01,
+            ymax=10,
+            ymode = log,
+            xmin=0,
+            xmax=1,
+            xlabel={Distribution parameter $p$},
+            xtick={0,0.2,0.4,0.6,0.8},
+            legend style={legend cell align=left, legend pos=south west,nodes={scale=0.75, transform shape}},
+        ]
+        \addplot[dashed,color=black] table [x=p, y=v0err] {Pitfalls/multilayerperf/basic.dat}
+        node[below,pos=0.2] {$\|V\|_2$};
+
+        \addplot[color=viridis03,very thick] table [x=p, y=mean] {Pitfalls/multilayerperf/dump_3_0.dat};
+        \addplot[color=viridis03,very thin,name path=lcb,] table [x=p, y=conf_05] {Pitfalls/multilayerperf/dump_3_0.dat};
+        \addplot[color=viridis03,very thin,name path=ucb,] table [x=p, y=conf_95] {Pitfalls/multilayerperf/dump_3_0.dat};
+        \addplot[pattern=crosshatch,pattern color=viridis03!50,area legend] fill between[of=lcb and ucb];
+
+        \addplot[color=viridis09,very thick] table [x=p, y=mean] {Pitfalls/multilayerperf/dump_3_0.001.dat};
+        \addplot[color=viridis09,very thin,name path=lcb,] table [x=p, y=conf_05] {Pitfalls/multilayerperf/dump_3_0.001.dat};
+        \addplot[color=viridis09,very thin,name path=ucb,] table [x=p, y=conf_95] {Pitfalls/multilayerperf/dump_3_0.001.dat};
+        \addplot[viridis09!15,area legend] fill between[of=lcb and ucb];
+
+        \legend{,,,,unregularized,regularized}
+    \end{axis}
+\end{tikzpicture}
