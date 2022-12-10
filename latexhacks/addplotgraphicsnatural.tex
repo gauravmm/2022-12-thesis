@@ -1,0 +1,28 @@
+\makeatletter
+\newcommand\addplotgraphicsnatural[2][]{%
+    \begingroup
+    % set options in this local group (will be lost afterwards):
+    \pgfqkeys{/pgfplots/plot graphics}{#1}%
+    % measure the natural size of the graphics:
+    \setbox0=\hbox{\includegraphics{#2}}%
+    %
+    % compute the required unit vector ratio:
+    \pgfmathparse{\wd0/(\pgfkeysvalueof{/pgfplots/plot graphics/xmax} - \pgfkeysvalueof{/pgfplots/plot graphics/xmin})}%
+    \let\xunit=\pgfmathresult
+    \pgfmathparse{\ht0/(\pgfkeysvalueof{/pgfplots/plot graphics/ymax} - \pgfkeysvalueof{/pgfplots/plot graphics/ymin})}%
+    \let\yunit=\pgfmathresult
+    %
+    % configure pgfplots to use it.
+    % The \xdef expands all macros except those prefixed by '\noexpand'
+    % and assigns the result to a global macro named '\marshal'.
+    \xdef\marshal{%
+        \noexpand\pgfplotsset{unit vector ratio={\xunit\space \yunit}}%
+    }%
+    \endgroup
+    %
+    % use our macro here:
+    \marshal
+    %
+    \addplot graphics[#1] {#2};
+}   
+\makeatother

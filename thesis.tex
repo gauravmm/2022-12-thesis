@@ -18,7 +18,6 @@
 \usepackage{graphicx}
 \usepackage[natbib]{biblatex}
 \usepackage{fancyhdr,sectsty}
-\usepackage{fontspec}
 \usepackage{caption,subcaption}
 \usepackage{minibox}
 \usepackage{parskip,setspace}
@@ -26,11 +25,17 @@
 \usepackage[nottoc,numbib]{tocbibind} % Add bibliography to TOC
 \usepackage[mathlines]{lineno}
 
+\newenvironment{abstract}{}{}
+\usepackage{abstract}
+
+\DeclareMathOperator*{\minimize}{minimize}
+\newtheorem{theorem}{Theorem}
+
 \input{latexhacks/linenomath.tex}
 \input{latexhacks/addplotgraphicsnatural.tex}
 
-\newfontfamily\OpenSans{Open Sans}[Scale=MatchLowercase]
-\newfontfamily\SourceSerifPro{Source Serif Pro}[Scale=MatchLowercase,Ligatures=TeX]
+%\newfontfamily\OpenSans{Open Sans}[Scale=MatchLowercase]
+%\newfontfamily\SourceSerifPro{Source Serif Pro}[Scale=MatchLowercase,Ligatures=TeX]
 
 %\bibliographystyle{abbrvnat}
 \bibliography{biblio.bib}
@@ -86,10 +91,10 @@
   {
     \hfill\includegraphics[width=1.25in,trim=0 0 .125in .25in]{cmu/cmu-wordmark-square-w-on-r}
   }
-  \begin{center}{\SourceSerifPro
+  \begin{center}{%\SourceSerifPro
     \vfill
 
-    {\Huge\OpenSans
+    {\Huge%\OpenSans
     {
     {Stable Models}\\[-1.em]
     \rule{0.25\textwidth}{1pt}
@@ -149,7 +154,7 @@ The former attempts to regularize TD, with $\mathcal L_2$-norm weight regulariza
 The second line started with Emphatic-TD, in which \citet{sutton2016emphatic} note that it is possible to reweight samples obtained off-policy so they appear to be on-policy. Such methods learn the follow-on trace using Monte-Carlo methods (in the original) and/or TD \citep{jiang2021learning,zhang2020provably} or techniques similar to TD \citep{hasselt2021expected}.
 
 Current work on deadly-triad-associated training instability is typically evaluated on three standard examples. However, it is possible to regularize training to mitigate divergence in these, and ridge regularization (RR) is used for that in the literature.
-In a paper that is in preparation, we introduce a new counterexample (in Figure~\ref{fig:mdp}) that is resistant to regularization. As expected, vanilla TD-based algorithms converge with arbitrarily poor performance for some off-policy distributions ($\eta=0$ line in Figure~\ref{fig:fixedpointp}), and regularization appears to blunt the asymptote ($\eta > 0$ lines). Part of our contribution is that there is a distribution at which the model never performs better than always guessing zeros (i.e. at the limit of RR $\eta\to\infty$) despite any amount of RR, and hence the model is \emph{vacuous}. This problem persists in any algorithm that converges to the same point as naive TD, which covers a wide swath of the extant literature; we make our analysis concrete by showing how this example forces the error bounds derived by \citet{zhang2021breaking} to permit vacuous solutions.
+In a paper that is in preparation, we introduce a new counterexample (in Figure~TODO) that is resistant to regularization. As expected, vanilla TD-based algorithms converge with arbitrarily poor performance for some off-policy distributions ($\eta=0$ line in Figure~TODO), and regularization appears to blunt the asymptote ($\eta > 0$ lines). Part of our contribution is that there is a distribution at which the model never performs better than always guessing zeros (i.e. at the limit of RR $\eta\to\infty$) despite any amount of RR, and hence the model is \emph{vacuous}. This problem persists in any algorithm that converges to the same point as naive TD, which covers a wide swath of the extant literature; we make our analysis concrete by showing how this example forces the error bounds derived by \citet{zhang2021breaking} to permit vacuous solutions.
 
 In the same paper, we show how modern Emphatic algorithms that use TD to learn the reweighting function are vulnerable to the bias introduced by RR. These algorithms (near-universally) employ RR so they provably converge despite changing policies. We construct a counterexample in which the emphasis and value models converge correctly when unregularized, but adding regularization may cause them to catastrophically diverge. Current lines of work on adapting Emphatic TD to deep RL tasks \cite{jiang2021emphatic,jiang2022learning} may show improvement at scale.
 
@@ -162,13 +167,16 @@ A natural application area for such an algorithm is in offline/batch RL, in whic
 
 \mainmatter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Provably stable dynamics models using projection}
+\chapter{Provably Stable Dynamics Models with Projection}
+
+\input{LSDDM/main.tex}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{The pitfalls of regularization in TD}
+\chapter{The Pitfalls of Regularization in Off-Policy TD}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{POP-TD for offline RL}
+\chapter{Projected Off-Policy TD for Offline RL}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
