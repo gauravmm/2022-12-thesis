@@ -1,0 +1,186 @@
+\documentclass[11pt]{book}
+
+\usepackage[letterpaper]{geometry}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % micro typography
+\usepackage{xcolor}         % colors
+\usepackage{tikz}           % drawings
+\usepackage{pgfplots}       % plots
+\usepackage{xfrac}          % better fractions
+\usepackage{amsmath,amsthm,amssymb,bm}
+\usepackage{comment,todonotes}
+\usepackage{graphicx}
+\usepackage[natbib]{biblatex}
+\usepackage{fancyhdr,sectsty}
+\usepackage{fontspec}
+\usepackage{caption,subcaption}
+\usepackage{minibox}
+\usepackage{parskip,setspace}
+\usepackage{epstopdf}
+\usepackage[nottoc,numbib]{tocbibind} % Add bibliography to TOC
+\usepackage[mathlines]{lineno}
+
+\input{latexhacks/linenomath.tex}
+\input{latexhacks/addplotgraphicsnatural.tex}
+
+\newfontfamily\OpenSans{Open Sans}[Scale=MatchLowercase]
+\newfontfamily\SourceSerifPro{Source Serif Pro}[Scale=MatchLowercase,Ligatures=TeX]
+
+%\bibliographystyle{abbrvnat}
+\bibliography{biblio.bib}
+
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{pgfplots.groupplots,positioning,fit,patterns,decorations.pathreplacing}
+\usepgfplotslibrary{fillbetween}
+
+
+% Margins
+\topmargin=-4pt
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=8.5in
+\headsep=0.15in
+
+\onehalfspacing
+
+%\pagestyle{fancy}
+%\fancyhf{}
+%\lhead{Gaurav Manek}
+%\rhead{\thepage}
+%\rfoot{\thepage}
+
+\title{ Temporal Difference Learning and Stable Models }
+\author{ Gaurav Manek }
+\date{\today}
+
+\newcommand{\E}{\textbf{E}}
+\newcommand{\diag}{\text{diag}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\subsectionsubtitle}[1]{\vspace{-0.5em}\textit{#1}\vspace{0.5em}}
+
+% Color Scheme
+\definecolor{viridis00}{RGB}{253, 231, 37}
+\definecolor{viridis01}{RGB}{181, 222, 43}
+\definecolor{viridis02}{RGB}{110, 206, 88}
+\definecolor{viridis03}{RGB}{53, 183, 121}
+\definecolor{viridis04}{RGB}{31, 158, 137}
+\definecolor{viridis05}{RGB}{38, 130, 142}
+\definecolor{viridis06}{RGB}{49, 104, 142}
+\definecolor{viridis07}{RGB}{62, 73, 137}
+\definecolor{viridis08}{RGB}{72, 40, 120}
+\definecolor{viridis09}{RGB}{68, 1, 84}
+
+\AddToHook{cmd/section/before}{\clearpage}
+
+\begin{document}
+\frontmatter
+
+\begin{titlepage}
+  {
+    \hfill\includegraphics[width=1.25in,trim=0 0 .125in .25in]{cmu/cmu-wordmark-square-w-on-r}
+  }
+  \begin{center}{\SourceSerifPro
+    \vfill
+
+    {\Huge\OpenSans
+    {
+    {Stable Models}\\[-1.em]
+    \rule{0.25\textwidth}{1pt}
+    \raisebox{-.1\baselineskip}{\textit{\Large and}}
+    \rule{0.25\textwidth}{1pt}\\[.5em]
+    {Temporal Difference Learning}
+    }
+    }\\
+
+
+    \vspace{0.25in}
+
+    \textbf{\large Gaurav Manek}\\
+
+    \vfill
+
+    Thesis
+
+    \textit{In Partial Fulfillment of the Computer Science PhD Program}
+
+    \vspace{0.33in}
+    Computer Science Department\\
+    School of Computer Science\\
+    Carnegie Mellon University\\
+    \today
+
+    }\end{center}
+\end{titlepage}
+
+\cleardoublepage
+
+\chapter{Abstract}
+In this thesis we examine two notions of stability: the predictions of neural network dynamics models and the training of reinforcement learning algorithms.
+In the first chapter we propose a new method for learning Lyapunov-stable dynamical models and the certifying Lyapunov function in a fully end-to-end manner. This works by carefully constructing a neural network to act as a Lyapunov function and then a custom reprojection layer to constrain the predictions of a nominal dynamics model. This method is stable by construction, even when randomly initialized. We demonstrate its stability on damped multi-link pendulums, and apply this to dynamically generate endless high-fidelity video textures.
+
+The second and third chapters deal with Reinforcement Learning (RL). When Temporal Difference (TD) learning is used with function approximation (i.e. neural networks) and off-policy sampling, learning may be catastrophically unstable. The literature has two main strategies to combat this: regularization and resampling.
+In the second chapter of this we show that regularization cannot always mitigate training instability. While the standard deadly triad examples from the literature can all be ``fixed'' via regularization, we construct a problem where TD learning never learns any non-trivial value function despite \emph{any} amount of regularization. We show how TD learning can be made to diverge by regularization, and how this also happens in Emphatic-TD based algorithms. Finally, we show this happens even when neural networks are used. The role of regularization in TD methods needs to be reconsidered in theory and done with more care in practice.
+
+In the third chapter we propose a novel resampling strategy called Projected Off-Policy (POP) TD, which resamples TD updates to come from a convex subset of provably ``safe'' distributions. This is distinct from Emphatic-TD which resamples to appear on-policy. We show how this mitigates the well-known distribution shift problem in offline RL on a gridworld environment, how it improves Conservative Q-Learning (CQL) on a D4RL random dataset, and how it can greatly improve the performance of CQL on a dataset made by combining different experts.
+
+We conclude the thesis by noting that both output and training stability are important for the future of RL, and discussing possible future directions of stability research.
+
+\clearpage
+
+\tableofcontents
+
+\cleardoublepage
+
+\linenumbers
+
+\chapter{Introduction}
+
+Temporal Difference (TD) learning is used to learn value functions of Markov decision processes (MDPs) using samples following some policy. In Reinforcement Learning (RL), it is necessary to use TD with both function approximation (i.e. neural networks), and off-policy learning. However, these three ingredients are combined, the learned functions exhibit severe instability and divergence. This was first observed by \citet{tsitsiklis1996analysis}, and is known in the literature as the \emph{deadly triad} \cite[p.~264]{sutton2020reinforcement}. While many variants of TD will provably converge despite the training instability, the quality of the solution at convergence is typically arbitrarily poor \citep{kolter2011fixed}.
+
+There are two separate lines of work in the literature that attempt to resolve this: regularization and Emphatic reweighting.
+The former attempts to regularize TD, with $\mathcal L_2$-norm weight regularization (common), $\mathcal L_1$ \citep{mahadevan2014proximal}, convex \citep{yu2017convergence}, and bounds propagation \citep{kumar2020discor}.
+The second line started with Emphatic-TD, in which \citet{sutton2016emphatic} note that it is possible to reweight samples obtained off-policy so they appear to be on-policy. Such methods learn the follow-on trace using Monte-Carlo methods (in the original) and/or TD \citep{jiang2021learning,zhang2020provably} or techniques similar to TD \citep{hasselt2021expected}.
+
+Current work on deadly-triad-associated training instability is typically evaluated on three standard examples. However, it is possible to regularize training to mitigate divergence in these, and ridge regularization (RR) is used for that in the literature.
+In a paper that is in preparation, we introduce a new counterexample (in Figure~\ref{fig:mdp}) that is resistant to regularization. As expected, vanilla TD-based algorithms converge with arbitrarily poor performance for some off-policy distributions ($\eta=0$ line in Figure~\ref{fig:fixedpointp}), and regularization appears to blunt the asymptote ($\eta > 0$ lines). Part of our contribution is that there is a distribution at which the model never performs better than always guessing zeros (i.e. at the limit of RR $\eta\to\infty$) despite any amount of RR, and hence the model is \emph{vacuous}. This problem persists in any algorithm that converges to the same point as naive TD, which covers a wide swath of the extant literature; we make our analysis concrete by showing how this example forces the error bounds derived by \citet{zhang2021breaking} to permit vacuous solutions.
+
+In the same paper, we show how modern Emphatic algorithms that use TD to learn the reweighting function are vulnerable to the bias introduced by RR. These algorithms (near-universally) employ RR so they provably converge despite changing policies. We construct a counterexample in which the emphasis and value models converge correctly when unregularized, but adding regularization may cause them to catastrophically diverge. Current lines of work on adapting Emphatic TD to deep RL tasks \cite{jiang2021emphatic,jiang2022learning} may show improvement at scale.
+
+However, Emphatic TD makes the key assumption that we must reweigh our TD updates so the effective distribution matches the on-policy distribution. This assumption is much stronger than necessary, there are many possible distributions under which TD behaves well, and we may be able to gain performance by only reweighting as much as needed. \citet{kolter2011fixed} establishes  conditions under which the TD updates are non-expansive and avoids divergence by reweighing TD updates to the closest effective distribution that satisfy these conditions. While \cite{kolter2011fixed} does include an algorithm that finds such an effective distribution, it does impose a substantial overhead (solving an inner optimization problem per TD update).
+
+It is possible to apply the same criterion and, by changing the notion of ``closest'' we use, obtain a \emph{different} optimization problem that can be solved with a constant-time overhead per TD update. This involves some strong structural assumptions on the solution that are supported by evidence but as-yet unproven. The resultant algorithm is called Projected Off-Policy TD (POP-TD), and it learns the reweighting factors in a manner similar to TD (i.e. optimized using stochastic gradient descent) and then applies those reweighting factors to each TD update. This is the core idea behind the thesis project we wish to propose.
+
+A natural application area for such an algorithm is in offline/batch RL, in which a policy is learned from a fixed dataset. This dataset may be obtained by running any agent on the environment, including agents that are far from optimal, or agents designed to achieve a different objective than that reflected in the reward. The goal is to learn a policy that maximizes the expected reward, and one of the key challenges in doing that is the \emph{distributional shift} between the dataset and the learned policy \cite{levine2020survey}. In fact, many algorithms are explicitly designed to constrain the learned policy to remain in the same distribution as the data, which is often suboptimal. Instead, with POP-TD, we intend to allow for the learned policy to drift from the distribution of the dataset by reweighting updates to a ``safe'' apparent distribution. This brings us to the proposed thesis project:
+
+
+\mainmatter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Provably stable dynamics models using projection}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{The pitfalls of regularization in TD}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{POP-TD for offline RL}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Conclusion}
+
+In prior work, we have identified a gap in the literature: that the common use of regularization to prevent instability from off-policy TD is not guaranteed to help and may even be harmful. Hence we propose POP-TD, a new algorithm that resamples TD to be consistent with a distribution under which TD updates are non-expansive (at convergence). We show this algorithm is successful on toy examples, and propose that we use it as a basis for a new algorithm for offline/batch RL. The remaining work involves designing and proving this algorithm, validating structural assumptions made in the design of POP-TD, and potentially proving convergence and providing error bounds for POP-TD.
+
+
+\backmatter
+\printbibliography
+
+\appendix
+%\section{Appendix }
+
+\end{document}
