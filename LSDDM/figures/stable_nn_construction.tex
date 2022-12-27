@@ -50,6 +50,6 @@
             \draw [->] (A) -- (E);
         \end{groupplot}
     \end{tikzpicture}
-    \caption{We plot the trajectory and the contour of a Lyapunov function of a stable dynamical system and illustrate our method. Let $g( x) = \frac{\nabla V(x)}{\|\nabla V(x)\|_2^2} \mathrm{ReLU}\left(\nabla V(x)^T \hat{f}(x) + \alpha V (x)\right)$. In the first case $\hat f( x)$ has a component $g( x)$ not in the halfspace, which we subtract to obtain $f( x)$. In the second case $\hat f( x)$ is already in the halfspace, so is returned unchanged.}
+    \caption{We plot the trajectory and the contour of a Lyapunov function of a stable dynamical system and illustrate our method. Let $g( x) = \frac{\nabla V(x)}{\|\nabla V(x)\|_2^2} \mathrm{ReLU}\left(\nabla V(x)^T \hat{f}(x) + \alpha V (x)\right)$. In the first case $\hat f( x)$ has a component $g( x)$ not in the half-space, which we subtract to obtain $f( x)$. In the second case $\hat f( x)$ is already in the half-space, so is returned unchanged.}
     \label{fig:stable_nn_construction}
 \end{figure}

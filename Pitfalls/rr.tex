@@ -38,7 +38,7 @@ So far most analysis of the deadly triad in the literature focuses on the linear
 
 \begin{table}
   \centering
-  \begin{tabular}{p{0.11\textwidth} p{0.88\textwidth}}
+  \begin{tabular}{p{0.15\textwidth} p{0.85\textwidth}}
     \toprule\toprule
     %    Theorem & Description \\
     %    \midrule
@@ -120,7 +120,7 @@ However, this belief does not accurately capture the nature of regularization: w
   Intuitively, a sufficient condition for a solution to be vacuous is that it remains in the half-space that is tangent to and excludes the non-vacuous parameter ball. This is equivalent to finding some distribution $\mu$ such that $\hat w^\top w^*(\eta) \leq 0$ for all $\eta$, which we numerically solve to obtain the model in trajectory 1. From Figure~\ref{fig:gigeometry} we can see the trajectory remains in the half-space, and from Figure~\ref{fig:giplots} we can see that the error is never less than $\|V\|$. Trajectory 1 is a vacuous example. \qed
 \end{example}
 
-We observe that Example~\ref*{ex:withrr}, because it remains entirely in the halfspace $\hat w^\top w^*(\eta) \leq 0$, could easily be generalized to other forms of regularization. We leave this for future work.
+We observe that Example~\ref*{ex:withrr}, because it remains entirely in the half-space $\hat w^\top w^*(\eta) \leq 0$, could easily be generalized to other forms of regularization. We leave this for future work.
 
 
 \paragraph{\emph{Breaking the Deadly Triad} and our counterexample.}
@@ -151,7 +151,7 @@ Their method bounds the error in our example by $2000*\|V\|$, which is tremendou
     \caption{We plot the error curves corresponding to the three $w^*(\eta)$ trajectories, along with $\|V\|$. Trajectory 1 is vacuous because the error is at least $\|V\|$ for all $\eta$. }
     \label{fig:giplots}
   \end{subfigure}
-  \caption{Plotting the trajectory of the parameters on the left and the errors on the right, we show how our counterexample 1 is never better than $\|V\|$ because it remains in halfspace where $\hat w^\top w^*(\eta) \leq 0$. For comparison, we show trajectory 2 that is improved by regularization, and 3, which exhibits small-$\eta$ errors. (The trajectories are stretched, so the errors in the two plots are not directly comparable.) }
+  \caption{Plotting the trajectory of the parameters on the left and the errors on the right, we show how our counterexample 1 is never better than $\|V\|$ because it remains in half-space where $\hat w^\top w^*(\eta) \leq 0$. For comparison, we show trajectory 2 that is improved by regularization, and 3, which exhibits small-$\eta$ errors. (The trajectories are stretched, so the errors in the two plots are not directly comparable.) }
   \label{fig:gi}
 \end{figure}
 

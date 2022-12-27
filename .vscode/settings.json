@@ -58,4 +58,18 @@
         }
     ],
     "latex-workshop.message.badbox.show": false,
+    "cSpell.words": [
+        "Acrobot",
+        "cartpole",
+        "ICNN",
+        "Invertibility",
+        "invertible",
+        "Kaiming",
+        "Lipschitz",
+        "Lyapunov",
+        "reproject",
+        "reprojection",
+        "semidefinite",
+        "sympy"
+    ],
 }

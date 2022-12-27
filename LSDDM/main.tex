@@ -1,4 +1,4 @@
-Deep networks are commonly used to model dynamical systems, predicting how the state of a system will evolve over time (either autonomously or in response to control inputs). Despite the predictive power of these systems, it has been difficult to make formal claims about the basic properties of the learned systems. In this paper, we propose an approach for learning dynamical systems that are guaranteed to be stable over the entire state space. The approach works by jointly learning a dynamics model and Lyapunov function that guarantees non-expansiveness of the dynamics under the learned Lyapunov function. We show that such learning systems are able to model simple dynamical systems and can be combined with additional deep generative models to learn complex dynamics, such as video textures, in a fully end-to-end fashion.
+Deep networks are commonly used to model dynamical systems, predicting how the state of a system will evolve over time (either autonomously or in response to control inputs). Despite the predictive power of these systems, it has been difficult to make formal claims about the basic properties of the learned systems. In this chapter, we propose an approach for learning dynamical systems that are guaranteed to be stable over the entire state space. The approach works by jointly learning a dynamics model and Lyapunov function that guarantees non-expansiveness of the dynamics under the learned Lyapunov function. These two models are combined with a novel reprojection layer to produce models that are guaranteed stable by construction, even without any training. We show that such learning systems are able to model simple dynamical systems such as pendulums, and can be combined with additional deep generative models to learn complex dynamics, such as video textures, in a fully end-to-end fashion.
 
 \emph{From ``Learning Stable Deep Dynamics Models'' by \citeauthor{manek2019stable} (\citeyear{manek2019stable})}
 
@@ -6,58 +6,58 @@ Deep networks are commonly used to model dynamical systems, predicting how the s
 
 \section{Introduction}
 
-This paper deals with the task of learning (continuous time) dynamical systems.  That is, given a state at time $t$, $x(t) \in \mathbb{R}^n$ we want to model the time-derivative of the state
-\begin{equation}
-    \dot{x}(t) \equiv \frac{d}{dt}x(t) = f(x(t))
-\end{equation}
-for some function $f : \mathbb{R}^n \rightarrow \mathbb{R}^n$. Modeling the time evolution of such dynamical systems (or their counterparts with control inputs $\dot{x}(t) = f(x(t),u(t))$ for $u(t) \in \mathbb{R}^m$) is a foundational problem, with applications in reinforcement learning, control, forecasting, and many other settings.  Owing to their representational power, neural networks have long been a natural choice for modeling the function $f$ \citep{gu2016continuous,nagabandi2018neural,mishra2017prediction,gal2016improving}.  However, when using a generic neural network to model dynamics in this setting, very little can be guaranteed about the behavior of the learned system.  For example, it is extremely difficult to say anything about the \emph{stability} properties of a learned model (informally, the tendency of the system to remain within some invariant bounded set).  While some recent work has begun to consider stability properties of neural networks \citep{chow2018lyapunov,richards2018lyapunov,taylor2019episodic}, it has typically done so by (``softly'') enforcing stability as an additional loss term on the training data. Consequently, they can say little about the stability of the system in unseen states.
+This chapter deals with the task of learning continuous-time dynamical systems. Given $x(t) \in \mathbb{R}^n$, a state at time $t$, we wish to model the time-derivative
+\begin{align}
+	\dot{x}(t) \equiv \frac{d}{dt}x(t) = f(x(t))
+\end{align}
+for some function $f : \mathbb{R}^n \rightarrow \mathbb{R}^n$. Modeling the time evolution of such dynamical systems (or with control inputs $\dot{x}(t) = f(x(t),u(t))$ for $u(t) \in \mathbb{R}^m$) is a foundational problem in machine learning, with applications in reinforcement learning, control, forecasting, and many other settings. Owing to their representational power, neural networks have long been a natural choice for modeling the function $f$ \citep{gu2016continuous,nagabandi2018neural,mishra2017prediction,gal2016improving}. However, when using a generic neural network to model dynamics in this setting, very little can be guaranteed about the behavior of the learned system, especially about its \emph{stability}. Informally, we say that a model is stable if we can pick a bounded set of states and guarantee that once the model enters that set it never leaves.  While some recent work has begun to consider stability properties of neural networks \citep{chow2018lyapunov,richards2018lyapunov,taylor2019episodic}, it has typically done so by softly enforcing stability as an additional loss term on the training data. Consequently, they can say little about the stability of the system in unseen states.
 
-In this paper, we propose an approach to learning neural network dynamics that are \emph{provably} stable over the entirety of the state space.  To do so, we jointly learn the system dynamics and a Lyapunov function.  This stability is a hard constraint imposed upon the model: unlike recent approaches, we do not enforce stability via an imposed loss function but build it directly into the dynamics of the model (i.e. Even a randomly initialized model in our proposed model class will be provably stable everywhere in state space).  The key to this is the design of a proper Lyapunov function, based on input convex neural networks \citep{amos2017input}, which ensures global exponential stability to an equilibrium point while still allowing for expressive dynamics.
+In this paper, we propose an approach to learning neural network dynamics that are provably Lyapunov-stable over the entirety of the state space. We do this by jointly learning a nominal system dynamics and the certifying Lyapunov function, and then reproject the predictions of the nominal model onto the level set of the Lyapunov function. This stability is a hard constraint imposed upon the model: unlike recent approaches, we do not enforce stability via an imposed loss function but build it directly into the dynamics of the model. This means that even a randomly initialized model in our proposed model class will be provably stable everywhere in state space. The key to this is the design of a proper Lyapunov function, based on input convex neural networks \citep{amos2017input}, which ensures global exponential stability to an equilibrium point while still allowing for expressive dynamics.
 
-Using these methods, we demonstrate learning dynamics of physical models such as $n$-link pendulums, and show a substantial improvement over generic networks.  We also show how such dynamics models can be integrated into larger network systems to learn dynamics over complex output spaces.  In particular, we show how to combine the model with a variational auto-encoder (VAE) \citep{kingma2013auto} to learn dynamic ``video textures'' \citep{schodl2000video}.
+Using these methods, we demonstrate learning dynamics of physical models such as $n$-link pendulums, and show a substantial improvement over generic networks.  We also show how such dynamics models can be integrated into larger network systems to learn dynamics over complex output spaces, combining the model with a variational auto-encoder (VAE) \citep{kingma2013auto} to learn dynamic ``video textures'' \citep{schodl2000video}.
 
 \section{Background and related work}
 
-\paragraph{Stability of dynamical systems.} Our work primarily considers the setting of autonomous dynamics systems $\dot{x}(t) = f(x(t))$ for $x(t) \in \mathbb{R}^n$. (The methods are applicable to the dynamics with control as well, but we focus on the autonomous case for simplicity of exposition.)  Such a system is defined to be \emph{globally asymptotically stable} (for simplicity, around the equilibrium point $x_e=0$) if we have $x(t) \rightarrow 0$ as $t \rightarrow \infty$ for any initial state $x(0) \in \mathbb{R}^n$; $f$ is \emph{locally asymptotically stable} if the same holds but only for $x(0) \in B$ where $B$ is some bounded set containing the origin.  Similarly, $f$ is \emph{globally (locally, respectively) exponentially stable} (i.e., converges to the equilibrium ``exponentially quickly'') if
-\begin{equation}
-    \|x(t)\|_2 \leq m \|x(0)\|_2 e^{-\alpha t}
-\end{equation}
-for some constants $m, \alpha \geq 0$ for any $x(0) \in \mathbb{R}^n$ ($B$, respectively).
+\paragraph{Stability of dynamical systems.} We consider the setting of uncontrolled dynamics systems $\dot{x}(t) = f(x(t))$ for $x(t) \in \mathbb{R}^n$. (We will discuss extending this to dynamics with control later; this is a non-trivial extension.) Such a system is defined to be \emph{globally asymptotically stable} around the equilibrium point $x_e=0$ if we have $x(t) \rightarrow 0$ as $t \rightarrow \infty$ for any initial state $x(0) \in \mathbb{R}^n$; $f$ is \emph{locally asymptotically stable} if the same holds but only for $x(0) \in \mathcal B$ where $\mathcal B$ is some bounded set containing the origin.  Similarly, $f$ is \emph{globally} or \emph{locally} exponentially stable if
+\begin{align}
+	\|x(t)\|_2 \leq m \|x(0)\|_2 e^{-\alpha t}
+\end{align}
+for some constants $m, \alpha \geq 0$ for any $x(0) \in \mathbb{R}^n$ ($\mathcal B$, respectively).
 
 The area of Lyapunov theory \citep{khalil2002nonlinear,la2012stability} establishes the connection between the various types of stability mentioned above and descent according to a particular type of function known as a Lyapunov function.  Specifically, let $V : \mathbb{R}^n \rightarrow \mathbb{R}$ be a continuously differentiable positive definite function, i.e., $V(x) > 0$ for $x \neq 0$ and $V(0) = 0$.  Lyapunov analysis says that $f$ is stable (according to the different definitions above), if and only if we can find some function $V$ as above such the \emph{value of this function is decreasing along trajectories generated by $f$}.  Formally, this is the condition that the time derivative $\dot{V}(x(t)) < 0$, i.e.,
-\begin{equation}
-    \dot{V}(x(t)) \equiv \frac{d}{dt}V(x(t)) = \nabla V(x)^T \frac{d}{dt} x(t) = \nabla V(x)^T f(x(t)) < 0
-\end{equation}
-This condition must hold for all $x(t) \in \mathbb{R}^n$ or for all $x(t) \in B$ to ensure global or local stability respectively.  Similarly $f$ is globally asymptotically stable if and only if there exists positive definite $V$ such that
-\begin{equation}
-    \dot{V}(x(t)) \leq -\alpha V(x(t)), \;\; \mbox{ with } c_1 \|x\|_2^2 \leq V(x) \leq c_2 \|x\|_2^2. \label{eqn:req_for_GAS}
-\end{equation}
-Showing that these conditions imply the various forms of stability is relatively straightforward, but showing the converse (that any stable system must obey this property for some $V$) is relatively more complex.  In this paper, however, we are largely concerned with the ``simpler'' of these two directions, as our goal is to enforce conditions that ensure stability.
+\begin{align}
+	\dot{V}(x(t)) \equiv \frac{d}{dt}V(x(t)) = \nabla V(x)^T \frac{d}{dt} x(t) = \nabla V(x)^T f(x(t)) < 0
+\end{align}
+This condition must hold for all $x(t) \in \mathbb{R}^n$ or for all $x(t) \in \mathcal B$ to ensure global or local stability respectively.  Similarly $f$ is globally asymptotically stable if and only if there exists positive definite $V$ such that
+\begin{align}
+	\dot{V}(x(t)) \leq -\alpha V(x(t)), \;\; \mbox{ with } c_1 \|x\|_2^2 \leq V(x) \leq c_2 \|x\|_2^2. \label{eqn:req_for_GAS}
+\end{align}
+Showing that these conditions imply the various forms of stability is relatively straightforward, but showing the converse (that any stable system must obey this property for some $V$) is relatively more complex.  In this chapter we are largely concerned with the ``simpler'' of these two directions, as our goal is to enforce conditions that ensure stability.
 
-\paragraph{Stability of linear systems.}
-For a linear system with matrix $A$:
-\begin{equation}
-    \dot{x}(t) = A x(t)
-\end{equation}
-it is well-established that the system is stable if and only if the real components of the the eigenvalues of $A$ are all strictly negative ($\mathsf{Re}(\lambda_i(A)) < 0$).  Equivalently, the same same property can be shown via a positive definite quadratic Lyapunov function
-\begin{equation}
-    V(x) = x^T Q x
-\end{equation}
+\paragraph{Stability of linear systems. }
+For a linear system with matrix $A$
+\begin{align}
+	\dot{x}(t) = A x(t)
+\end{align}
+it is well-known that the system is stable if and only if the real components of the the eigenvalues of $A$ are all strictly negative ($\mathsf{Re}(\lambda_i(A)) < 0$).  Equivalently, the same same property can be shown via a positive definite quadratic Lyapunov function
+\begin{align}
+	V(x) = x^T Q x
+\end{align}
 for $Q\succ 0$.  In this case, by Equation~\ref{eqn:req_for_GAS}, the following ensures stability:
-\begin{equation}
-    \dot{V}(x(t)) = x(t)^T A^T Q x(t) + x(t)^T Q A x(t) \leq -\alpha x(t)^T Q x(t)
-\end{equation}
-i.e., if we can find a positive definite matrix $Q \succeq I$ with that $A^T Q + Q A + \alpha Q \preceq 0$ negative semidefinite.  Such bounds (and much more complex extensions) for the basis for using linear matrix inequalities (LMIs), as a method to ensure stability of linear dynamical systems.  The methods also have applicability to non-linear systems, and several authors have used LMI analysis to learn non-linear dynamical systems by constraining the linearization of the systems to have global Lyapunov functions \cite{khansari2011learning,blocher2017learning,umlauft2017learning},
+\begin{align}
+	\dot{V}(x(t)) = x(t)^T A^T Q x(t) + x(t)^T Q A x(t) \leq -\alpha x(t)^T Q x(t)
+\end{align}
+i.e., if we can find a positive definite matrix $Q \succeq I$ with that $A^T Q + Q A + \alpha Q \preceq 0$ negative semidefinite.  Such bounds (and much more complex extensions) for the basis for using linear matrix inequalities (LMIs), as a method to ensure stability of linear dynamical systems.  The methods also have applicability to non-linear systems, and several authors have used LMI analysis to learn non-linear dynamical systems by constraining the linearized systems to have global Lyapunov functions \cite{khansari2011learning,blocher2017learning,umlauft2017learning},
 
-The point we want to emphasize from the above discussion, though, is that the task of \emph{learning} even a stable \emph{linear} dynamical system is not a convex problem.  Although the constraints
-\begin{equation}
-    Q \succeq I, \;\; A^T Q + Q A + \alpha Q \preceq 0
-\end{equation}
-are convex in $A$ and $Q$ separately, they are not convex in $A$ and $Q$ jointly.  Thus, the problem of jointly learning a stable linear dynamical system and its corresponding Lyapunov function, even for the simple linear-quadratic setting, is \emph{not} a convex optimization problem, and alternative techniques such as alternating minimization need to be employed instead.  Alternatively, past work has also looked at different heuristics, such as approximately projecting a dynamics function $A$ onto the (non-convex) stable set of matrices with eigenvalues $\mathsf{Re}(\lambda_i(A)) < 0$ \citep{boots2008constraint}.
+Even though the constraints
+\begin{align}
+	Q \succeq I, \;\; A^T Q + Q A + \alpha Q \preceq 0
+\end{align}
+are convex in $A$ and $Q$ separately, they are not convex in $A$ and $Q$ jointly.  Thus, the problem of jointly learning a stable linear dynamical system and its corresponding Lyapunov function, even for the simple linear-quadratic setting, is \emph{not} a convex optimization problem, and alternative techniques such as alternating minimization need to be employed instead.  Past work has considered different heuristics, such as approximately projecting a dynamics function $A$ onto the (non-convex) stable set of matrices with eigenvalues $\mathsf{Re}(\lambda_i(A)) < 0$ \citep{boots2008constraint}. It is no surprise, then, that learning stable non-linear systems is even more challenging:
 
-\paragraph{Stability of non-linear systems}  For general non-linear systems, establishing stability via Lyapunov techniques is typically even more challenging.  For the typical task here, which is that of establishing stability of some \emph{known} dynamics $\dot{x}(t) = f(x(t))$, finding a suitable Lyapunov function is often more an art than a science.  Although some general techniques such as sum-of-squares certification \citep{parrilo2000structured,papachristodoulou2002construction} provide general methods for certifying stability of e.g., polynomial systems, these are often expensive and don't easily scale to high dimensional systems.
 
-Notably, our proposed approach here is able to learn provably stable systems without solving this (generally hard) problem.  Specifically, while it is difficult to find a Lyapunov function that certifies the stability of some \emph{known} system, we exploit the fact that it is relatively much easier to \emph{enforce} some function to behave in a stable manner according to a Lyapunov function.
+\paragraph{Stability of non-linear systems}  For general non-linear systems, establishing stability via Lyapunov techniques is typically even more challenging.  For the typical task here, which is that of establishing stability of some \emph{known} dynamics $\dot{x}(t) = f(x(t))$, finding a suitable Lyapunov function is often more an art than a science.  Although some general techniques such as sum-of-squares certification \citep{parrilo2000structured,papachristodoulou2002construction} provide general methods for certifying stability of polynomial (or similar) systems, these are often expensive and don't easily scale to high dimensional systems.
+Our proposed approach here is able to learn provably stable systems without solving this (generally hard) problem.  Specifically, while it is difficult to find a Lyapunov function that certifies the stability of some \emph{known} system, we exploit the fact that it is relatively much easier to \emph{enforce} some function to behave in a stable manner according to a Lyapunov function.
 
 \paragraph{Lyapunov functions in deep learning}
 Finally, there has been a small set of recent work exploring the intersection of deep learning and Lyapunov analysis \citep{chow2018lyapunov,richards2018lyapunov,taylor2019episodic}.  Although related to our work here, the approach in this past work is quite different.  As is more common in the control setting, these papers try to learn neural-network-based Lyapunov functions for control policies, but in way that enforces stability via a loss penalty.  For instance Richards et al., \citep{richards2018lyapunov} optimize a loss function that encourages $\dot{V}(x) \leq 0$ for $x$ in some training set.  In contrast, our work guarantees absolute stability \emph{everywhere} in the state space, not just at a small set of points; but only for a simpler setting where the \emph{entire} dynamics are to be learned (and hence can be ``forced'' to be stable) rather than a stabilizing controller for known dynamics.
@@ -67,99 +67,95 @@ Finally, there has been a small set of recent work exploring the intersection of
 The intuition of the approach we propose in this paper is straightforward: instead of learning a dynamics function and attempting to separately verify its stability via a Lyapunov function, we propose to \emph{jointly learn a dynamics model and Lyapunov function, where the dynamics is inherently constrained to be stable (everywhere in the state space) according to the Lyapunov function}.
 
 Specifically, following the principles mentioned above, let $\hat{f} : \mathbb{R}^n \rightarrow \mathbb{R}^n$ denote a ``nominal'' dynamics model, and let $V : \mathbb{R}^n \rightarrow \mathbb{R}$ be a positive definite function: $V(x) \geq 0$ for $x \neq 0$ and $V(0) = 0$.  Then in order to (provably, globally) ensure that a dynamics function is stable, we can simply project $\hat{f}$ such that it satisfies the condition
-\begin{equation}
-    \nabla V(x)^T \hat{f}(x) \leq -\alpha V(x)
-\end{equation}
+\begin{align}
+	\nabla V(x)^T \hat{f}(x) \leq -\alpha V(x)
+\end{align}
 i.e., we define the dynamics
-\begin{equation}
-    \label{eq:dynamics}
-    \begin{split}
-        f(x) & =  \mathsf{Proj}\left(\hat{f}(x), \{f: \nabla V(x)^T f \leq -\alpha V(x)\}\right) \\
-        & = \begin{cases} \hat{f}(x) & \mbox{if } \nabla V(x)^T \hat{f}(x) \leq -\alpha V(x) \\
+\begin{align}
+	\label{eq:dynamics}
+	\begin{split}
+		f(x) & =  \mathsf{Proj}\left(\hat{f}(x), \{f: \nabla V(x)^T f \leq -\alpha V(x)\}\right) \\
+		& = \begin{cases} \hat{f}(x) & \mbox{if } \nabla V(x)^T \hat{f}(x) \leq -\alpha V(x) \\
               \hat{f}(x) - \nabla V(x)\frac{\nabla V(x)^T \hat{f}(x) + \alpha V (x)}{\|\nabla V(x)\|_2^2}
                          & \mbox{otherwise}\end{cases} \\
-        & = \hat{f}(x) - \nabla V(x)\frac{\mathsf{ReLU}\bigl(\nabla V(x)^T \hat{f}(x) + \alpha V (x) \bigr)}{\|\nabla V(x)\|_2^2}
-    \end{split}
-\end{equation}
-where $\mathsf{Proj(x;\mathcal{C})}$ denotes the orthogonal projection of $x$ onto the point $\mathcal{C}$, and where the second equation follows from the analytical projection of a point onto a halfspace.  As long as $V$ is defined using automatic differentiation tools, it is straightforward to include the gradient $\nabla V$ terms into the definition of $f$, and our final network can be trained just like any other function.   The general approach here is illustrated in Figure \ref{fig:stable_nn_construction}.
+		& = \hat{f}(x) - \nabla V(x)\frac{\mathsf{ReLU}\bigl(\nabla V(x)^T \hat{f}(x) + \alpha V (x) \bigr)}{\|\nabla V(x)\|_2^2}
+	\end{split}
+\end{align}
+where $\mathsf{Proj(x;\mathcal{C})}$ denotes the orthogonal projection of $x$ onto the point $\mathcal{C}$, and where the second equation follows from the analytical projection of a point onto a half-space.  As long as $V$ is defined using automatic differentiation tools, it is straightforward to include the gradient $\nabla V$ terms into the definition of $f$, and our final network can be trained just like any other function.   The general approach here is illustrated in Figure \ref{fig:stable_nn_construction}.
 
 \input{LSDDM/figures/stable_nn_construction.tex}
 
 \subsection{Properties of the Lyapunov function $V$}\label{sec:lyapunov_properties}
 
-Although the treatment above seems to make the problem of learning stable systems quite straightforward, the sublety of the approach lies in the choice of the function $V$.  Specifically, as mentioned previously, $V$ needs to be positive definite, but additionally $V$ needs to have \emph{no local optima except $0$}.   This is due to Lyapunov decrease condition: recall that we are attempting to guarantee stability to the equilibrium point $x=0$, yet the decrease condition imposed upon the dynamics means that $V$ is decreasing along trajectories of $f$.  If $V$ has a local optimum away from the origin, the dynamics can in theory get stuck in this location; this manifests itself by the $\|\nabla V(x)\|_2^2$ term going to zero, which results in the dynamics becoming undefined at the optima.
+Although the treatment above seems to make the problem of learning stable systems quite straightforward, the subtlety of the approach lies in the choice of the function $V$. Specifically, $V$ needs to be positive definite and needs to have \emph{no local optima except $0$}. This is due to Lyapunov decrease condition: recall that we are attempting to guarantee stability to the equilibrium point $x=0$, yet the decrease condition imposed upon the dynamics means that $V$ is decreasing along trajectories of $f$.  If $V$ has a local optimum away from the origin, the dynamics can in theory get stuck in this location; this manifests itself by the $\|\nabla V(x)\|_2^2$ term going to zero, which results in the dynamics becoming undefined at the optima.
 
 To enforce these conditions, we make the following design decisions regarding $V$:
 
-\paragraph{No local optima.} We represent $V$ via an input-convex neural network (ICNN) function $g$ \citep{amos2017input}, which enforces the condition that $g(x)$ be convex in its inputs $x$.  A fairly generic form of such networks consists is given by the recurrence
-\begin{equation}
-    \begin{split}
-        z_1 & = \sigma_0(W_0 x + b_0) \\
-        z_{i+1} & = \sigma_i(U_i z_i + W_i x + b_i), i=1,\ldots,k-1 \\
-        g(x) & \equiv z_k
-    \end{split}
-\end{equation}
-where $W_i$ are real-valued weights mapping from inputs to the $i+1$ layer activations; $U_i$ are \emph{positive} weights mapping previously layer activations $z_i$ to the next layer;  $b_i$ are real-valued biases;and $\sigma_i$ are \emph{convex, monotonically non-decreasing} non-linear activations, such as the ReLU or smooth variants.  It is straightforward to show that with this formulation, $g$ is convex in $x$ \citep{amos2017input}, and indeed any convex function can be approximated by such networks \citep{chen2018optimal}.
+\paragraph{No local optima.} We represent $V$ via an input-convex neural network (ICNN) function $g : \mathbb R^n \to \mathbb R$ \citep{amos2017input}, which enforces the condition that $g(x)$ be convex in its inputs $x$. Such a network is given by the recurrence
+\begin{align}
+	\begin{split}
+		z_1 & = \sigma_0(W_0 x + b_0) \\
+		z_{i+1} & = \sigma_i(U_i z_i + W_i x + b_i), i=1,\ldots,k-1 \\
+		g(x) & \equiv z_k
+	\end{split} . \label{eqn:icnnrecurrence}
+\end{align}
 
-\paragraph{Positive definite.} While the ICNN property can enforce that $V$ have only a single global optima, it does not necessarily enforce that this optima be at $x = 0$.  While one could fix this by e.g., removing the biases term (but this imposes substantial limitations on the representable functions, which can no longer be arbitrary convex functions) or by shifting whatever global minima exists to the origin (but this requires finding the global minimum during training, which itself is computationally expensive), we take an alternative approach and simply shift the function such that $V(0) = 0$, and add a small quadratic regularization term to ensure strict positive definiteness.
-\begin{equation}
-    V(x) = \sigma_{k+1}(g(x) - g(0)) + \epsilon \|x\|_2^2.
-    \label{eq:V_definition}
-\end{equation}
-where $\sigma_k$ is a \emph{positive} convex non-decreasing function with $\sigma_k(0) = 0$, $g$ is the ICNN defined previously, and $\epsilon$ is a small constant.  These terms together still enforce (strong) convexity and positive definiteness of $V$.
+For layer $i+1$: $W_i$ are weights mapping from the input $x$ to the $i+1$ layer activations; $U_i$ are positive weights mapping previously layer activations $z_i$ to the next layer; $b_i$ are real-valued biases; and $\sigma_i$ are convex, monotonically non-decreasing non-linear activations such as the ReLU or smooth variants. It is straightforward to show that with this formulation, $g$ is convex in $x$ \citep{amos2017input}, and indeed any convex function can be approximated by such networks \citep{chen2018optimal}.
+
+\paragraph{Positive definite.} The ICNN property enforces that $V$ has only a single global optimum; for $V$ to be positive definite, we must also enforce that this optimum is at $x = 0$. We could fix this by removing the bias term from Equation~\ref{eqn:icnnrecurrence}, but this would mean we could no longer represent arbitrary convex functions. We could also shift whatever global minimum to the origin, but that would require finding finding the global minimum during training, which itself is computationally expensive. Instead, we take an alternative approach: we shift the function such that $V(0) = 0$, and add a small quadratic regularization term to ensure strict positive definiteness.
+\begin{align}
+	V(x) = \sigma_{k+1}(g(x) - g(0)) + \epsilon \|x\|_2^2.
+	\label{eq:V_definition}
+\end{align}
+where $\sigma_k$ is a positive convex non-decreasing function with $\sigma_k(0) = 0$, $g$ is the ICNN defined previously, and $\epsilon$ is a small constant.  These terms together still enforce (strong) convexity and positive definiteness of $V$.
 
 \input{LSDDM/figures/explanation/rehu.tex}
-\paragraph{Continuously differentiable.}  Although not always required, several of the conditions for Lyapunov stability are simplified is $V$ is continuously differentiable.  To achieve this, rather than use ReLU activations\footnote{Note that the typical softplus smoothed approximation of the ReLU will not work for all purposes above, since we require an activation with $\sigma(0)=0$}, we use a smoothed version that replaces the purely linear ReLU with a quadratic region in $[0,d]$
-\begin{equation}
-    \sigma(x) = \begin{cases} 0                   & \mbox {if } x \leq 0 \\
+\paragraph{Continuously differentiable.}  Although not always required, several of the conditions for Lyapunov stability are simplified if $V$ is continuously differentiable. ReLU is discontinuous around 0, and the soft-plus smoothed ReLU is not zero at the origin. We use a smoothed version with quadratic knee in $[0, d]$, called the Rectified Huber Unit (ReHU):
+\begin{align}
+	\sigma(x) = \begin{cases} 0                   & \mbox {if } x \leq 0 \\
               \nicefrac{x^2}{2d}  & \mbox{if } 0 < x < d \\
               x - \nicefrac{d}{2} & \mbox{otherwise}\end{cases}.
-\end{equation}
+\end{align}
 An illustration of this activation is shown in Figure \ref{fig:rehu}.
 
-\paragraph{(Optional) Warped input space.}  Although convexity ensures that the Lyapunov function have no local optima, this is a sufficient but not necessary condition, and indeed requiring a strongly convex Lyapunov function may impose too strict a requirement upon the learned dynamics.  For this reason, the input to the ICNN function $g(x)$ above can be optionally preceded by any continuously differentiable \emph{invertible} function $F : \mathbb{R}^n \times \mathbb{R}^n$, i.e., using
-\begin{equation}
-    V(x) = \sigma_{k+1}(g(F(x)) - g(F(0))) + \epsilon \|x\|_2^2.
-    \label{eq:V_definition2}
-\end{equation}
-as the Lyapunov function.  Invertibility ensures that the sublevel sets of $V$ (which are convex sets, by definition) map to contiguous regions of the composite function $g \circ F$, thus ensuring that no local optima exist in this composed function.
+\paragraph{[Optional] Warped input space. }  Our construction so far guarantees that the Lyapunov function has no local optima by making it convex. This is sufficient but not necessary, and it may even impose too strict a constraint on the learned dynamics. We can relax this function by allowing the input to the ICNN to be warped by any continuously differentiable invertible function $F : \mathbb{R}^n \times \mathbb{R}^n$. i.e., using
+\begin{align}
+	V(x) = \sigma_{k+1}(g(F(x)) - g(F(0))) + \epsilon \|x\|_2^2.
+	\label{eq:V_definition2}
+\end{align}
+as the Lyapunov function.  Invertibility ensures that the level sets of $V$, which are convex, map to contiguous regions of the composite function $g \circ F$. This allows the resultant Lyapunov function to be non-convex without having any optima other than the global.
 
 With these conditions in place, we have the following result.
 \begin{theorem}
-    The dynamics defined by
-    \begin{equation}
-        \dot{x} = f(x)
-    \end{equation}
-    defined by $f$ from \eqref{eq:dynamics} and $V$ from \eqref{eq:V_definition} or \eqref{eq:V_definition2} are globally exponentially stable to the equilibrium point $x=0$, for any (bounded weight) networks defining the $\hat{f}$ and $V$ functions.
+	The dynamics defined by
+	\begin{align}
+		\dot{x} = f(x)
+	\end{align}
+	are globally exponentially stable to the equilibrium point $x=0$. Where $f$ is from Eqn.~\eqref{eq:dynamics} and $V$ is from Eqn.~\eqref{eq:V_definition} or Eqn.~\eqref{eq:V_definition2}, and $\hat{f}$ and $V$ functions have finite, bounded weights.
 \end{theorem}
 \begin{proof}
-    The proof is straightforward, and relies on the properties of the networks created above.  First, note that by our definitions we have, for some $M$,
-    \begin{equation}
-        \epsilon \|x\|^2_2 \leq V(x) \leq M \|x\|_2^2
-    \end{equation}
-    where the lower bound follows by definition and the fact that $g$ is positive. The upper bound follows from the fact that the $\sigma$ activation as defined is linear for large $x$ and quadratic around 0.  This fact in turn implies that $V(x)$ behaves linearly as $\|x\|\rightarrow \infty$, and is quadratic around the origin, so can be upper bounded by some quadratic $M \|x\|_2^2$.
+	The proof is straightforward, and relies on the properties of the networks created above.  First, note that by our definitions we have, for some $M$,
+	\begin{align}
+		\epsilon \|x\|^2_2 \leq V(x) \leq M \|x\|_2^2
+	\end{align}
+	where the lower bound follows from Eqn.~\ref{eq:V_definition} and the fact that $g$ is positive. The upper bound follows from the fact that the ReHU activation is linear for large $x$ and quadratic around 0.  This fact in turn implies that $V(x)$ behaves linearly as $\|x\|\rightarrow \infty$, and is quadratic around the origin, so can be upper bounded by some quadratic $M \|x\|_2^2$.
 
-    The fact the $V$ is continuously differentiable means that $\nabla V(x)$ (in $f$) is defined everywhere, bounds on $\|\nabla V(x)\|_2^2$ for all $x$ follows from the the Lipschitz property of $V$, the fact that $0 \leq \sigma'(x) \leq 1$, and the $\epsilon \|x\|_2^2$ term
-    \begin{equation}
-        \epsilon \|x\|_2 \leq  \|\nabla V(x)\|_2 \leq \sum_{i=1}^k \prod_{j=i}^k \|U_j\|_2 \|W_i\|_2
-    \end{equation}
+	The fact the $V$ is continuously differentiable means that $\nabla V(x)$ (in $f$) is defined everywhere, bounds on $\|\nabla V(x)\|_2^2$ for all $x$ follows from the the Lipschitz property of $V$, the fact that $0 \leq \sigma'(x) \leq 1$, and the $\epsilon \|x\|_2^2$ term
+	\begin{align}
+		\epsilon \|x\|_2 \leq  \|\nabla V(x)\|_2 \leq \sum_{i=1}^k \prod_{j=i}^k \|U_j\|_2 \|W_i\|_2
+	\end{align}
+	where $\|\cdot\|_2$ denotes the operator norm when applied to a matrix.  This implies that the dynamics are defined and bounded everywhere owing to the choice of function $\hat{f}$.
 
-    where $\|\cdot\|_2$ denotes the operator norm when applied to a matrix.  This implies that the dynamics are defined and bounded everywhere owing to the choice of function $\hat{f}$.
-
-    Now, consider some initial state $x(0)$.  The definition of $f$ implies that
-    \begin{equation}
-        \frac{d}{dt} V(x(t)) = \nabla V(x)^T \frac{d}{dt} x(t) = \nabla V(x)^T f(x) \leq -\alpha V(x(t)).
-    \end{equation}
-    Integrating this equation gives the bound
-    \begin{equation}
-        V(x(t)) \leq V(x(0))e^{-\alpha t}
-    \end{equation}
-    and applying the lower and upper bounds gives
-    \begin{equation}
-        \epsilon \|x(t)\|_2^2 \leq M \|x(0)\|_2^2 e^{-\alpha t}
-        \; \Longrightarrow \; \|x(t)\|_2 \leq \frac{M}{\epsilon} \|x(0)\|_2 e^{-\alpha t/2}
-    \end{equation}
-    as required for global exponential convergence.
+	Now, consider some initial state $x(0)$.  The definition of $f$ implies that
+	\begin{align}
+		\frac{d}{dt} V(x(t))  & = \nabla V(x)^T \frac{d}{dt} x(t) = \nabla V(x)^T f(x) \leq -\alpha V(x(t)).
+		\intertext{Integrating this equation gives the bound}
+		V(x(t))               & \leq V(x(0))e^{-\alpha t}
+		\intertext{and applying the lower and upper bounds gives}
+		\epsilon \|x(t)\|_2^2 & \leq M \|x(0)\|_2^2 e^{-\alpha t}
+		\; \Longrightarrow \; \|x(t)\|_2 \leq \frac{M}{\epsilon} \|x(0)\|_2 e^{-\alpha t/2}
+	\end{align}
+	as required for global exponential convergence.
 \end{proof}
 
 
@@ -173,15 +169,15 @@ We illustrate our technique on several example problems, first highlighting the 
 
 \input{LSDDM/figures/random_stable.tex}
 
-Although we mention this only briefly, it is interesting to visualize the dynamics created by random networks according to our process, i.e., before any training at all.  Because the dynamics models are inherently stable, these random networks lead to stable dynamics with interesting behaviors, illusrated in  Figure \ref{fig:nominal_dynamics}.  Specifically, we let $\hat{f}$ be defined by a 2-100-100-2 fully connected network, and $V$ be a 2-100-100-1 ICNN, with both networks initialized via the default weights of PyTorch (the Kaiming uniform initialization \citep{he2015delving}) and with the ICNN having it's $U$ weights further put through a softplus unit to make them positive.
+Although we mention this only briefly, it is interesting to visualize the dynamics created by random networks according to our process, i.e., before any training at all. Because the dynamics models are inherently stable, these random networks lead to stable dynamics with interesting behaviors, illustrated in Figure \ref{fig:nominal_dynamics}.  Specifically, we let $\hat{f}$ be defined by a fully connected network and $V$ be an ICNN. Both networks have two hidden layers with 100 nodes each, and are initialized by the Kaiming uniform initialization \citep{he2015delving}). The $U$ weights in the ICNN are further subject to a softplus unit to make them positive.
 
-\subsection{$n$-link pendulum}
+\subsection[n-link pendulum]{$n$-link pendulum}
 
-Next we look at the ability of our approach to model a physically-based dynamical system, specifically the $n$-link pendulum.  A damped, rigid $n$-link pendulum's state $x$ can be described by the angular position $\theta_i$ and angular velocity $\theta_i$ of each link $i$.  As before $\hat f$ is a $2n$-100-100-$2n$ network, and the Lyapunov function $V$ is a $2n$-60-60-1 ICNN with properties described in Section~\ref{sec:lyapunov_properties}. Models are trained with pairs of data $(x, \dot x)$ produced by the symbolic algebra solver \texttt{sympy}, using simulation code adapted from \cite{vanderplas_2017}.
+Next we look at the ability of our approach to model a physically-based dynamical system, specifically the $n$-link pendulum.  A damped, rigid $n$-link pendulum's state $x$ can be described by the angular position $\theta_i$ and angular velocity $\theta_i$ of each link $i$.  As before $\hat f$ and the Lyapunov function $V$ have two hidden layers of 100 nodes, with properties described in Section~\ref{sec:lyapunov_properties}. Models are trained with pairs of data $(x, \dot x)$ produced by the symbolic algebra solver \texttt{sympy}, using simulation code adapted from \cite{vanderplas_2017}.
 
 \input{LSDDM/figures/pendulum_experiment.tex}
 
-In Figure~\ref{fig:pendulum_experiment}, we compare the simulated dynamics with the learned dynamics in the case of a simple damped pendulum (i.e. with $n=1$), showing both the streamplot of the vector field and a single simulated trajectory, and draw a contour plot of the learned Lyapunov function. As seen, the system is able to learn dynamics that can accurately predict motion of the system even over long time periods.
+In Figure~\ref{fig:pendulum_experiment}, we compare the simulated dynamics with the learned dynamics in the case of a simple damped pendulum (i.e. with $n=1$), showing both the vector field and a single simulated trajectory, and draw a contour plot of the learned Lyapunov function. As seen, the system is able to learn dynamics that can accurately predict motion of the system even over long time periods.
 
 \input{LSDDM/figures/pendulum_results/results.tex}
 
@@ -191,16 +187,29 @@ We also evaluate the learned dynamics quantitatively varying $n$ and the time ho
 
 Finally, We apply our technique to stable video texture generation, using a Variational Autoencoder (VAE) \citep{kingma2013auto} to learn an encoding for images, and our stable network to learn a dynamics model in encoding-space.  Given a sequence of frames $(y_0, y_1, \ldots)$, we feed the network the frame at time $t$
 and train it to reconstruct the frames at time $t$ and $t+1$.  Specifically, we consider a VAE defined by the encoder $e : \mathcal{Y} \rightarrow \mathbb{R}^{2n}$ giving mean and variance $\mu, \log \sigma^2_t = e(y_t)$, latent state $z_t \in \mathbb{R}^n \sim \mathcal{N}(\mu_t, \sigma_t^2)$, and decoder $d: \mathbb{R}^n \rightarrow \mathcal{Y}$, $y_t \approx d(z_t)$.  We train the network to minimize both the standard VAE loss (reconstruction error plus a KL divergence term), but \emph{also} minimize the reconstruction loss of a next predicted state. We model the evolution of the latent dynamics at $z_{t+1} \approx f(z_t)$, or more precisely $y_{t+1} \approx d(f(z_t))$.  In other words, as illustrated in Figure~\ref{fig:vae_training}, we train the full system to minimize
-\begin{equation}
-    \minimize_{e,d,\hat{f},V} \sum_{t=1}^{T-1} \biggl ( \mathsf{KL}(\mathcal{N}(\mu_t,\sigma_t^2 I\|\mathcal{N}(0,I)) + \mathbf{E}_z \bigl [ \|d(z_t) - y_t\|_2^2 + \| d(f(z_t)) - y_{t+1}\|_2^2 \bigr ] \biggr )
-\end{equation}
+\begin{align}
+	\minimize_{e,d,\hat{f},V} \sum_{t=1}^{T-1} \biggl ( \mathsf{KL}(\mathcal{N}(\mu_t,\sigma_t^2 I\|\mathcal{N}(0,I)) + \mathbf{E}_z \bigl [ \|d(z_t) - y_t\|_2^2 + \| d(f(z_t)) - y_{t+1}\|_2^2 \bigr ] \biggr )
+\end{align}
 
 
 \input{LSDDM/figures/vae-training.tex}
 \input{LSDDM/figures/vae-results.tex}
 
-We train the model on pairs of successive frames sampled from videos. To generate video textures, we seed the dynamics model with the encoding of a single frame and numerically integrate the dynamics model to obtain a trajectory. The VAE decoder converts each step of the trajectory into a frame.   In Figure~\ref{fig:vae_results}, we present sample stable trajectories and frames produced by our network. For comparison, we also include an example trajectory and resulting frames when the dynamics are modelled without the stability constraint (i.e. letting $f$ in the above loss be a generic neural network).  For the naive model, the dynamics quickly diverge and produce a static image, whereas for our approach, we are able to generate different (stable) trajectories that keep generating realistic images over long time horizons.
+We train the model on pairs of successive frames sampled from videos. To generate video textures, we seed the dynamics model with the encoding of a single frame and numerically integrate the dynamics model to obtain a trajectory. The VAE decoder converts each step of the trajectory into a frame. In Figure~\ref{fig:vae_results}, we present sample stable trajectories and frames produced by our network. For comparison, we also include an example trajectory and resulting frames when the dynamics are modelled without the stability constraint (i.e. letting $f$ in the above loss be a generic neural network).  For the naive model, the dynamics quickly diverge and produce a static image, whereas for our approach, we are able to generate different (stable) trajectories that keep generating realistic images over long time horizons.
 
 \section{Conclusion}
-In this paper we  proposed a method for learning stable non-linear dynamical systems defined by neural network architectures.  The approach jointly learns a convex positive definite Lyapunov function along with dynamics constrained to be stable according to these dynamics everywhere in the state space.  We show that these models can be integrated into other deep architectures such as VAEs, and learn complex latent space dynamics is a fully end-to-end manner.  Although we have focused here on the autonomous (i.e., uncontrolled) setting, the method opens several directions for future work, such as integration into dynamical systems for control or reinforcement learning settings.  Have stable systems as a ``primitive'' can be useful in a large number of contexts, and combining these stable systems with the representational power of deep networks offers a powerful tool in modeling and controlling dynamical systems.
 
+We proposed a method for learning stable non-linear dynamical systems defined by neural network architectures. The approach jointly learns a convex positive definite Lyapunov function along with dynamics constrained to be stable according to these dynamics everywhere in the state space.  We show that these models can be integrated into other deep architectures such as VAEs, and learn complex latent space dynamics is a fully end-to-end manner.  Although we have focused here on the autonomous (uncontrolled) setting, the method opens several directions for future work, such as integration into dynamical systems for control or reinforcement learning settings.  Have stable systems as a ``primitive'' can be useful in a large number of contexts, and combining these stable systems with the representational power of deep networks offers a powerful tool in modeling and controlling dynamical systems.
+
+
+\section{Adaptation to Stable Control and Reinforcement Learning }
+
+After the successes of our stable dynamics model, we attempted to extend it to also learn stable policies and value functions. The intuitive extension to this is to replace the dynamics model $\hat f$ with fixed (known) dynamics $\tilde f$ and a learnable policy network $\pi$. That is, we train to minimize:
+\begin{align}
+  \mathsf{ReLU}\bigl(\nabla V(x)^T \tilde{f}(x, \pi) + \alpha V (x) \bigr)
+\end{align}
+given traces from simulated dynamics. We also transformed the dynamics so that the goal state was positioned at the origin, choosing suitable transformations for the dynamics and Lyapunov functions. As required by the approach, we attempted to train it from trajectory samples to minimize the error over one step.
+
+We were able to successfully learn stabilizing controllers for toy examples such as a simple damped pendulum and for the cartpole problem. Unfortunately, we were not able to learn a swing-up controller for either environment, or any type of controller for an Acrobot\footnote{A two-link pendulum with a single actuator in the middle joint. } or more complex locomotion tasks. We observed that the training would consistently fail in the same way: the nominal dynamics function would diverge to the point of uselessness, followed by the learned Lyapunov function collapsing to a trivial function.
+
+This persisted despite any amount of regularization, hyperparameter tuning, and even across a variety of environments. Contemporary efforts in the literature were similarly unable to scale this approach to locomotion tasks. The consistent failure of this method suggested that an underlying principle was being violated, and that regularization was not able to address that. We eventually investigated how the difference in distributions between the data used to train the purportedly stable controller and the policy the controller was attempting to learn, which led us to the work in the next chapter.
