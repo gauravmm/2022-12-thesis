@@ -60,6 +60,7 @@
     "latex-workshop.message.badbox.show": false,
     "cSpell.words": [
         "Acrobot",
+        "approximators",
         "cartpole",
         "ICNN",
         "Invertibility",

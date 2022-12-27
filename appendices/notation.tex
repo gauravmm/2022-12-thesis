@@ -1,0 +1,26 @@
+\chapter{Notation and Definitions}
+
+Standard notation used throughout this thesis.
+
+\begin{tabular}{rl p{4in}}\hline\hline
+	\multicolumn{2}{c}{Symbol} & Description
+	\\\hline
+	$n$                        & $\in\mathbb Z^+$ & Number of states.
+	\\  $m$ & $\in\mathbb Z^+$ & Number of features.
+	\\  $\pi$ & $\in\mathbb R^{n}$ & on-policy distribution.
+	\\  $\mu$ & $\in\mathbb R^{n}$ & sampling distribution, may be on- or off-policy.
+	\\  $\upsilon$ & : $\mathbb R^+ \to \mathbb R^{n}$ & apparent distribution induced by $\eta$-regularizing the emphatic correction of off-policy $\mu$ to on-policy $\pi$
+	\\  $\eta$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter
+	\\  $\eta_m$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter for emphasis model in COF-PAC (the Emphatic algorithm we analyze)
+	\\  $\eta_v$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter for value model in COF-PAC (the Emphatic algorithm we analyze)
+	\\  $p$ & $\in[0, 1]$ & distribution parameter used to express a family of possible sampling distributions.
+	\\  $\Phi$ & $\in \mathbb R^{[n\times m]}$ & Feature basis for the value function
+	\\  $\hat w$ & $\in \mathbb R^{[m\times 1]}$ & Linear weights for value function, fit using least-squares regression of $V$ on $\Phi$.
+	\\  $w^*(\eta)$ & $\in \mathbb R^{[m\times 1]}$ & Linear weights for value function, learned using TD.
+	\\  $\Phi w^*(\eta)$ & $\in \mathbb R^{[n\times 1]}$ & Learned value function
+	\\  $V$ & $\in \mathbb R^{[n\times 1]}$ & True value function
+	\\  $\|V\|$ & $\in \mathbb R$ & Error from guessing zeros, equivalent to the threshold for a vacuous example
+	\\  $\|x\|$ & $\in\mathbb R^+_0$ & $\ell_2$-norm of vector or matrix $x$, equal to $\sqrt{x^\top x}$
+	\\  $\|x\|_D$ & $\in\mathbb R^+_0$ & $\ell_2$-norm of vector or matrix $x$ under $D$, equal to $\sqrt{x^\top D x}$
+	\\ \hline\hline
+\end{tabular}
