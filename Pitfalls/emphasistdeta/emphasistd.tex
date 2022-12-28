@@ -1,101 +1,98 @@
 \centering
 \begin{subfigure}[b]{0.5\columnwidth}
-  \centering
+	\centering
 
-  \begin{tikzpicture}
-    \begin{axis}[
-        title={Emphasis Model Error},
-        scale only axis,
-        width=\columnwidth,
-        height=3cm,
-        tick align=outside,
-        enlargelimits=false,
-        mark=none,
-        xmode=log,
-        xmin=0.00000001, xmax=0.1,
-        ymin=0, ymax=.4,
-        xlabel={Emphasis $\eta_m$},
-        ylabel={$\|\upsilon(\eta) - \pi\|$},
-        ylabel style={yshift = -18pt,},
-        yticklabels={,0,,,,0.4},
-        xtick align=inside,
-        ytick align=inside,
-      ]
-      \addplot[color=viridis09,very thick] table [x=eta, y=err] {Pitfalls/emphasistdeta/td_emph_nAD_etaemph.dat};
+	\begin{tikzpicture}
+		\begin{axis}[
+				title={Emphasis Model Error},
+				scale only axis,
+				width=\columnwidth,
+				height=3cm,
+				tick align=outside,
+				enlargelimits=false,
+				mark=none,
+				xmode=log,
+				xmin=0.00000001, xmax=0.1,
+				ymin=0, ymax=.4,
+				xlabel={Emphasis $\eta_m$},
+				ylabel={$\|\upsilon(\eta) - \pi\|$},
+				ylabel style={yshift = -18pt,},
+				yticklabels={,0,,,,0.4},
+				xtick align=inside,
+				ytick align=inside,
+			]
+			\addplot[color=viridis09,very thick] table [x=eta, y=err] {Pitfalls/emphasistdeta/td_emph_nAD_etaemph.dat};
 
-      \draw[dashed,black] (0.0002,0.269) to (0.0002,0.);
-      \node[anchor=north west,rotate=90] at (axis cs:0.0002,0.) {${\scriptstyle 2\cdot 10^{-4}}$};
-    \end{axis}
-  \end{tikzpicture}
-  \caption{$\eta_m$ distorts the emphasis model. }
-  \label{fig:emphimpetam}
+			\draw[dashed,black] (0.0002,0.269) to (0.0002,0.);
+			\node[anchor=north west,rotate=90] at (axis cs:0.0002,0.) {${\scriptstyle 2\cdot 10^{-4}}$};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{$\eta_m$ distorts the emphasis model. }\label{fig:emphimpetam}
 \end{subfigure}
 
 \begin{subfigure}[b]{0.5\columnwidth}
-  \centering
+	\centering
 
-  \begin{tikzpicture}
-    \begin{axis}[
-        title={Value Model Error},
-        scale only axis,
-        width=\columnwidth,
-        height=3cm,
-        tick align=outside,
-        enlargelimits=false,
-        mark=none,
-        xmode=log,
-        xmin=0.0000001, xmax=1.,
-        ymax=0.002,
-        xlabel={Emphasis $\eta_m$},
-        ylabel={$\|\Phi_v w_v^* - V\|$},
-        yticklabels={,,},
-        ylabel style={yshift = -7pt,},
-        scaled y ticks = false,
-        xtick align=inside,
-        ytick align=inside,
-      ]
-      \draw[dashed,black] (0.00025,0.269) to (0.00025,0.);
-      \node[anchor=north west,rotate=90] at (axis cs:0.0002,0.0002) {${\scriptstyle 2\cdot 10^{-4}}$};
+	\begin{tikzpicture}
+		\begin{axis}[
+				title={Value Model Error},
+				scale only axis,
+				width=\columnwidth,
+				height=3cm,
+				tick align=outside,
+				enlargelimits=false,
+				mark=none,
+				xmode=log,
+				xmin=0.0000001, xmax=1.,
+				ymax=0.002,
+				xlabel={Emphasis $\eta_m$},
+				ylabel={$\|\Phi_v w_v^* - V\|$},
+				yticklabels={,,},
+				ylabel style={yshift = -7pt,},
+				scaled y ticks = false,
+				xtick align=inside,
+				ytick align=inside,
+			]
+			\draw[dashed,black] (0.00025,0.269) to (0.00025,0.);
+			\node[anchor=north west,rotate=90] at (axis cs:0.0002,0.0002) {${\scriptstyle 2\cdot 10^{-4}}$};
 
-      \addplot[color=viridis09,very thick] table [x=eta, y=err] {Pitfalls/emphasistdeta/td_emph_valerr_etaemph.dat};
+			\addplot[color=viridis09,very thick] table [x=eta, y=err] {Pitfalls/emphasistdeta/td_emph_valerr_etaemph.dat};
 
-    \end{axis}
-  \end{tikzpicture}
-  \caption{$\eta_m$ distorts value. }
-  \label{fig:emphvaletam}
+		\end{axis}
+	\end{tikzpicture}
+	\caption{$\eta_m$ distorts value. }\label{fig:emphvaletam}
 \end{subfigure}
 
 \begin{subfigure}[b]{0.5\columnwidth}
-  \centering
-  \begin{tikzpicture}
-    \begin{axis}[
-        title={Value Model Error},
-        scale only axis,
-        width=\columnwidth,
-        height=3cm,
-        tick align=outside,
-        enlargelimits=false,
-        mark=none,
-        xmode=log, ymode=log,
-        xmin=0.00000001, xmax=.001,
-        ymin=0.1, ymax=100,
-        xlabel={Value $\eta_v$},
-        ylabel={$\|\Phi_v w_v^* - V\|$},
-        yticklabels={,,},
-        ylabel style={yshift = -7pt,},
-        scaled y ticks = false,
-        xtick align=inside,
-        ytick align=inside,
-      ]
-      \draw[dashed,black] (0.000000001,3.) to (1.,3.);
-      \node[anchor=south west] at (axis cs:0.00000001,3.) {$\|V\|$};
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+				title={Value Model Error},
+				scale only axis,
+				width=\columnwidth,
+				height=3cm,
+				tick align=outside,
+				enlargelimits=false,
+				mark=none,
+				xmode=log, ymode=log,
+				xmin=0.00000001, xmax=.001,
+				ymin=0.1, ymax=100,
+				xlabel={Value $\eta_v$},
+				ylabel={$\|\Phi_v w_v^* - V\|$},
+				yticklabels={,,},
+				ylabel style={yshift = -7pt,},
+				scaled y ticks = false,
+				xtick align=inside,
+				ytick align=inside,
+			]
+			\draw[dashed,black] (0.000000001,3.) to (1.,3.);
+			\node[anchor=south west] at (axis cs:0.00000001,3.) {$\|V\|$};
 
-      \draw[dashed,black] (0.000000001,.005) to (1.,.005);
-      \node[anchor=south west] at (axis cs:0.00000001,.005) {$\epsilon$};
+			\draw[dashed,black] (0.000000001,.005) to (1.,.005);
+			\node[anchor=south west] at (axis cs:0.00000001,.005) {$\epsilon$};
 
-      \addplot[color=viridis09,very thick] table [x=eta, y=err] {Pitfalls/emphasistdeta/td_emph_valerr_etaval.dat};
-    \end{axis}
-  \end{tikzpicture}
-  \caption{$\eta_v$ can't fix this. }
-  \label{fig:emphvaletav}
+			\addplot[color=viridis09,very thick] table [x=eta, y=err] {Pitfalls/emphasistdeta/td_emph_valerr_etaval.dat};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{$\eta_v$ can't fix this. }\label{fig:emphvaletav}
 \end{subfigure}

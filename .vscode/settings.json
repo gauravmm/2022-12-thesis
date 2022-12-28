@@ -65,6 +65,7 @@
         "Barto's",
         "cartpole",
         "currarrow",
+        "emphasistd",
         "Gaurav",
         "geometryintuition",
         "gigeometry",
@@ -87,5 +88,17 @@
         "withrr",
         "xscale",
         "ysep"
+    ],
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.synctex.afterBuild.enabled": true,
+    "latex-workshop.latex.external.build.command": "latexmk",
+    "latex-workshop.latex.external.build.args": [
+        "-pdf",
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-shell-escape",
+        "-outdir=build",
+        "thesis"
     ],
 }

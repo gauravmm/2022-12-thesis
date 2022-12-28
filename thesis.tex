@@ -158,19 +158,19 @@ We conclude with a discussion on future directions that our work on stable model
 \input{Pitfalls/rr.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Projected Off-Policy TD for Offline RL}
+\chapter{Projected Off-Policy TD for Offline Reinforcement Learning}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Conclusion}
 
-In prior work, we have identified a gap in the literature: that the common use of regularization to prevent instability from off-policy TD is not guaranteed to help and may even be harmful. Hence we propose POP-TD, a new algorithm that resamples TD to be consistent with a distribution under which TD updates are non-expansive (at convergence). We show this algorithm is successful on toy examples, and propose that we use it as a basis for a new algorithm for offline/batch RL. The remaining work involves designing and proving this algorithm, validating structural assumptions made in the design of POP-TD, and potentially proving convergence and providing error bounds for POP-TD.
+In prior work, we have identified a gap in the literature: that the common use of regularization to prevent instability from off-policy TD is not guaranteed to help and may even be harmful. Hence we propose POP-TD, a new algorithm that resamples TD to be consistent with a distribution under which TD updates are non-expansive (at convergence). We show this algorithm is successful on toy examples, and propose that we use it as a basis for a new algorithm for offline/batch RL.  The remaining work involves designing and proving this algorithm, validating structural assumptions made in the design of POP-TD, and potentially proving convergence and providing error bounds for POP-TD.
 
 \appendix
 \input{appendices/chapter.tex}
 
-\backmatter
+\backmatter{}
 \addcontentsline{toc}{chapter}{Bibliography}
-\printbibliography
+\printbibliography{}
 
 \end{document}

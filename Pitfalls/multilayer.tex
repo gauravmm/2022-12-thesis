@@ -1,5 +1,5 @@
 \centering
-\label{fig:multi_mdp_illustration}
+\label{fig:multi_mdp_illustration}\label{fig:mdp9_illustration}
 \tikzset{fit margins/.style={/tikz/afit/.cd,#1,
     /tikz/.cd,
     inner xsep=\pgfkeysvalueof{/tikz/afit/left}+\pgfkeysvalueof{/tikz/afit/right},
@@ -8,17 +8,17 @@
     yshift=-\pgfkeysvalueof{/tikz/afit/bottom}+\pgfkeysvalueof{/tikz/afit/top}},
     afit/.cd,left/.initial=2pt,right/.initial=2pt,bottom/.initial=2pt,top/.initial=2pt}
 
-\begin{tikzpicture}[->,shorten >=1pt, node distance={15mm}, main/.style = {draw, circle}] 
+\begin{tikzpicture}[->,shorten >=1pt, node distance={24mm}, main/.style = {draw, circle}] 
 \node[main] (3) {$s_{3,1}$};
 \node[main] (1) [below left of=3] {$s_{1,1}$};
 \node[main] (2) [below right of=3]{$s_{2,1}$};
 
-\node[main] (11) [above left=0mm and 4mm of 1] {};
-\node[main] (12) [below left=0mm and 4mm of 1] {};
-\node[main] (21) [above right=0mm and 4mm of 2] {};
-\node[main] (22) [below right=0mm and 4mm of 2] {};
-\node[main] (31) [above left=4mm and 0mm of 3] {};
-\node[main] (32) [above right=4mm and 0mm of 3] {};
+\node[main] (11) [above left=0mm and 6mm of 1] {};
+\node[main] (12) [below left=0mm and 6mm of 1] {};
+\node[main] (21) [above right=0mm and 6mm of 2] {};
+\node[main] (22) [below right=0mm and 6mm of 2] {};
+\node[main] (31) [above left=6mm and 0mm of 3] {};
+\node[main] (32) [above right=6mm and 0mm of 3] {};
 
 
 \path
