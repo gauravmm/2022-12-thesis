@@ -270,6 +270,24 @@ In the literature, it is commonly assumed that $A$ is ``nearly'' positive defini
 
 A common practice in the literature is to set $\eta$ before training, without regard for the sampling distribution. This is ill advised, as the value may be under- or over-regularizing depending on the sampling distribution. One such example is illustrated in Figure~\ref{fig:mismatchedeta}, where selecting an $\eta$ that minimizes the error for one distribution will lead to vacuous or nearly-vacuous results in the other two. A second example in Figure~\ref{fig:giplots} has no single $\eta$ for which trajectories 2 and 3 are both non-vacuous. This is especially relevant as regularization is commonly used to permit distribution drift during training, as discussed in Section~\ref{sec:relatedwork}. If the training distribution changes while $\eta$ is fixed, then algorithms that can be proven to converge to good solutions under some original distribution may converge to poor solutions as the distribution drifts.
 
+\begin{figure}
+  \centering
+  \begin{subfigure}[t]{0.8\columnwidth}
+    \centering
+    \input{Pitfalls/smalleta/smalleta.tex}
+    \caption{Different MPs at off-policy distributions selected to show small-$\eta$ error. The error may increase at multiple $\eta$, and may even occur \emph{after} the optimal $\eta$. }
+    \label{fig:etagraph}
+  \end{subfigure}
+  \\
+
+  \begin{subfigure}[t]{0.8\columnwidth}
+    \centering
+    \input{Pitfalls/fixedpoint/fixedpoint.tex}
+    \caption{Three off-policy distributions with mutually incompatible $\eta$. There is no $\eta$ at which all models are not vacuous or nearly vacuous. }
+    \label{fig:mismatchedeta}
+  \end{subfigure}
+  \caption{We plot TD error against $\eta$ to show small-$\eta$ errors (above) and mutually-incompatible $\eta$ (below). We also plot the error at the limit of vacuity $\|V\|$ and the representation error $\epsilon$. }
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Emphatic approaches and our counterexample}
@@ -277,23 +295,6 @@ A common practice in the literature is to set $\eta$ before training, without re
 Emphatic-TD eliminates instability from off-policy sampling by reweighing incoming data (via an importance function) so it appears to be on-policy. There is considerable interest in making this more practical, especially by learning the importance and value models simultaneously. A leading example of this work is COF-PAC \cite{zhang2020provably}, which uses $\ell_2$-regularized versions of GTD2 \cite{sutton2009fast} to learn both the value and emphasis models. The authors rely on regularization, particularly because the target policy changes during learning. This makes COF-PAC vulnerable to regularization-caused error. We illustrate this with Example~\ref{ex:emph} in which COF-PAC learns correctly when unregularized, but has large error when regularized. (Mathematical details are deferred to Appendix~\ref{app:emphatic}.)
 
 
-\begin{figure}
-  \begin{subfigure}[t]{0.48\textwidth}
-    \centering
-    \input{Pitfalls/smalleta/smalleta.tex}
-    \vspace{-1.25em}
-    \caption{Different MPs at off-policy distributions selected to show small-$\eta$ error. The error may increase at multiple $\eta$, and may even occur \emph{after} the optimal $\eta$. }
-    \label{fig:etagraph}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[t]{0.48\textwidth}
-    \centering
-    \input{Pitfalls/fixedpoint/fixedpoint.tex}
-    \caption{Three off-policy distributions with mutually incompatible $\eta$. There is no $\eta$ at which all models are not vacuous or nearly vacuous. }
-    \label{fig:mismatchedeta}
-  \end{subfigure}
-  \caption{We plot TD error against $\eta$ to show small-$\eta$ errors (left) and mutually-incompatible $\eta$ (right). We also plot the error at the limit of vacuity $\|V\|$ and the representation error $\epsilon$. }
-\end{figure}
 
 \begin{figure}
   \input{Pitfalls/emphasistdeta/emphasistd.tex}

@@ -1,7 +1,7 @@
 \begin{tikzpicture}
     \begin{axis}[
             scale only axis,
-            width=\textwidth-10mm,
+            width=\columnwidth,
             height=3.99cm,
             tick align=outside,
             enlargelimits=false,
@@ -9,14 +9,14 @@
             ymax=100,
             ymin=0.01,
             ymode=log,
-            xmin=0.000000001,
+            xmin=0.00000001,
             xmax=0.1,
             xmode=log,
             xlabel={Regularization parameter $\eta$},
-            %ylabel={TD error},
+            ylabel={TD error},
             x tick label style={font=\small, yshift=0.5ex},
-            y tick label style={font=\small, xshift=0.5ex},
-            ytick align=inside,
+            yticklabels={,,},
+            %y tick label style={font=\small, xshift=0.5ex},
             xtick align=inside,
         ]
 

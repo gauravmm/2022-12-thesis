@@ -202,7 +202,7 @@ We train the model on pairs of successive frames sampled from videos. To generat
 We proposed a method for learning stable non-linear dynamical systems defined by neural network architectures. The approach jointly learns a convex positive definite Lyapunov function along with dynamics constrained to be stable according to these dynamics everywhere in the state space.  We show that these models can be integrated into other deep architectures such as VAEs, and learn complex latent space dynamics is a fully end-to-end manner.  Although we have focused here on the autonomous (uncontrolled) setting, the method opens several directions for future work, such as integration into dynamical systems for control or reinforcement learning settings.  Have stable systems as a ``primitive'' can be useful in a large number of contexts, and combining these stable systems with the representational power of deep networks offers a powerful tool in modeling and controlling dynamical systems.
 
 
-\section{Adaptation to Stable Control and Reinforcement Learning }
+\section{Adaptation to Stable Control and RL }
 
 After the successes of our stable dynamics model, we attempted to extend it to also learn stable policies and value functions. The intuitive extension to this is to replace the dynamics model $\hat f$ with fixed (known) dynamics $\tilde f$ and a learnable policy network $\pi$. That is, we train to minimize:
 \begin{align}

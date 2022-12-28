@@ -8,20 +8,6 @@
 Without $\ell_2$ regularization, our linear model fails with asymptotic error. As this penalizes the $\ell_2$-norm of the learned weights, this removes the asymptote and so we can no longer use the existence of an asymptote as evidence of failure. Instead, we propose a different definition of failure by noting that, in the limiting case, regularization drives the learned weights to zero ($\lim_{\eta\to\infty} w^*(\eta) = \vec 0$). The learned value function $\Phi\cdot\vec 0 = \vec 0$ has no information about the true value function. We argue that if the error with any $\eta\in\mathbb R^+$ is never better than this case then the model is vacuous and hence adopt the threshold error of $\|\Phi\cdot\vec 0 - V\| = \|V\|$ to call a model vacuous. This explains the failure condition in Equation~\ref{eqn:vacuoustd}.
 
 
-\subsubsection{Small-Eta Error}
-Our simplified example allows us to show this easily.
-
-\begin{example}\label{ex:badeta2}
-  When TD is regularized, the model may diverge around (typically small) values of $\eta$.
-  \proof
-
-  We set $p=0.9$ and solve for $\det(A+\eta I)=0$:
-  \begin{align}
-    0 & = 100\eta^2+47.4p\eta +1.85\eta - 1.30p^2 + 0.927p
-    \\  \eta & = 0.00482577 \quad \lor \quad \eta = -0.45
-  \end{align}
-  Note that the denominator of $g(p,\eta)$ is proportional to $\det(A+\eta I)$, and so $g(0.9,\eta)$--and the error at the TD fixed point--can be made arbitrarily large by selecting $\eta$ close to $4.83\times 10^{-3}$. As this is the only positive root, the model does not diverge at other values.
-\end{example}
 
 
 \subsubsection{Emphatic approaches and our counterexample}

@@ -8,12 +8,12 @@
                     vertical sep=0pt,
                 },
             scale only axis,
-            width=\textwidth-8mm,
-            height=1.33cm,
+            width=\columnwidth,
+            height=.12\columnwidth,
             tick align=outside,
             enlargelimits=false,
-            xmin=0.000000001,
-            xmax=1,
+            xmin=0.00000001,
+            xmax=.1,
             xmode=log,
             xlabel={Regularization parameter $\eta$},
             x tick label style={font=\small, yshift=0.5ex},
@@ -29,7 +29,7 @@
             yticklabels={,,},
             ytick style={draw=none},
         ]
-        \node[anchor=south east,black] at (axis cs:.8, 2.25) {$\scriptstyle \|V\|$};
+        \node[anchor=south east,black] at (axis cs:.08, 2.25) {$\scriptstyle \|V\|$};
         \draw[dashed,very thick,gray] (axis cs:0.000000001, 2.25) to[] (axis cs:1000, 2.25);
 
         %\node[anchor=north east,black] at (axis cs:.8, 0.044) {$\epsilon$};
@@ -46,9 +46,8 @@
             yticklabels={,,},
             ytick style={draw=none},
             ylabel={TD error},
-            ylabel style={yshift=-3mm},
         ]
-        \node[anchor=south east,black] at (axis cs:.8, 2.25) {$\scriptstyle \|V\|$};
+        \node[anchor=south east,black] at (axis cs:.08, 2.25) {$\scriptstyle \|V\|$};
         \draw[dashed,very thick,gray] (axis cs:0.000000001, 2.25) to[] (axis cs:1000, 2.25);
 
         %\node[anchor=north east,black] at (axis cs:.8, 0.044) {$\epsilon$};
@@ -65,7 +64,7 @@
             yticklabels={,,},
             ytick style={draw=none},
         ]
-        \node[anchor=north east,black] at (axis cs:.8, 2.2) {$\scriptstyle \|V\|$};
+        \node[anchor=north east,black] at (axis cs:.08, 2.2) {$\scriptstyle \|V\|$};
         \draw[dashed,very thick,gray] (axis cs:0.000000001, 2.2) to[] (axis cs:1000, 2.2);
 
         %\node[anchor=north east,black] at (axis cs:.8, 0.044) {$\epsilon$};
