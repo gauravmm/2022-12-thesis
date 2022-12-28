@@ -1,12 +1,12 @@
 \centering
-\begin{subfigure}[b]{0.32\textwidth}
+\begin{subfigure}[b]{0.5\columnwidth}
   \centering
 
   \begin{tikzpicture}
     \begin{axis}[
         title={Emphasis Model Error},
         scale only axis,
-        width=\textwidth-8mm,
+        width=\columnwidth,
         height=3cm,
         tick align=outside,
         enlargelimits=false,
@@ -30,15 +30,15 @@
   \caption{$\eta_m$ distorts the emphasis model. }
   \label{fig:emphimpetam}
 \end{subfigure}
-%
-\begin{subfigure}[b]{0.32\textwidth}
+
+\begin{subfigure}[b]{0.5\columnwidth}
   \centering
 
   \begin{tikzpicture}
     \begin{axis}[
         title={Value Model Error},
         scale only axis,
-        width=\textwidth-8mm,
+        width=\columnwidth,
         height=3cm,
         tick align=outside,
         enlargelimits=false,
@@ -64,21 +64,21 @@
   \caption{$\eta_m$ distorts value. }
   \label{fig:emphvaletam}
 \end{subfigure}
-%
-\begin{subfigure}[b]{0.32\textwidth}
+
+\begin{subfigure}[b]{0.5\columnwidth}
   \centering
   \begin{tikzpicture}
     \begin{axis}[
         title={Value Model Error},
         scale only axis,
-        width=\textwidth-8mm,
+        width=\columnwidth,
         height=3cm,
         tick align=outside,
         enlargelimits=false,
         mark=none,
         xmode=log, ymode=log,
         xmin=0.00000001, xmax=.001,
-        ymin=0.001, ymax=100,
+        ymin=0.1, ymax=100,
         xlabel={Value $\eta_v$},
         ylabel={$\|\Phi_v w_v^* - V\|$},
         yticklabels={,,},
