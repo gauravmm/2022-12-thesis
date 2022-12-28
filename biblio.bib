@@ -404,6 +404,58 @@
   organization = {JMLR. org}
 }
 
+@inproceedings{chaudhuri2022first,
+  title     = {First-Order Regret in Reinforcement Learning with Linear Function Approximation: A Robust Estimation Approach},
+  author    = {Wagenmaker, Andrew J and Chen, Yifang and Simchowitz, Max and Du, Simon and Jamieson, Kevin},
+  booktitle = {Proceedings of the 39th International Conference on Machine Learning},
+  pages     = {22384--22429},
+  year      = {2022},
+  editor    = {Chaudhuri, Kamalika and Jegelka, Stefanie and Song, Le and Szepesvari, Csaba and Niu, Gang and Sabato, Sivan},
+  volume    = {162},
+  series    = {Proceedings of Machine Learning Research},
+  month     = {17--23 Jul},
+  publisher = {PMLR},
+  pdf       = {https://proceedings.mlr.press/v162/wagenmaker22a/wagenmaker22a.pdf},
+  url       = {https://proceedings.mlr.press/v162/wagenmaker22a.html},
+  abstract  = {Obtaining first-order regret bounds—regret bounds scaling not as the worst-case but with some measure of the performance of the optimal policy on a given instance—is a core question in sequential decision-making. While such bounds exist in many settings, they have proven elusive in reinforcement learning with large state spaces. In this work we address this gap, and show that it is possible to obtain regret scaling as $\widetilde{\mathcal{O}}(\sqrt{d^3 H^3 \cdot V_1^\star \cdot K} + d^{3.5}H^3\log K )$ in reinforcement learning with large state spaces, namely the linear MDP setting. Here $V_1^\star$ is the value of the optimal policy and $K$ is the number of episodes. We demonstrate that existing techniques based on least squares estimation are insufficient to obtain this result, and instead develop a novel robust self-normalized concentration bound based on the robust Catoni mean estimator, which may be of independent interest.}
+}
+
+
+@article{levine2020offline,
+  author     = {Sergey Levine and
+                Aviral Kumar and
+                George Tucker and
+                Justin Fu},
+  title      = {Offline Reinforcement Learning: Tutorial, Review, and Perspectives
+                on Open Problems},
+  journal    = {CoRR},
+  volume     = {abs/2005.01643},
+  year       = {2020},
+  url        = {https://arxiv.org/abs/2005.01643},
+  eprinttype = {arXiv},
+  eprint     = {2005.01643},
+  timestamp  = {Fri, 08 May 2020 15:04:04 +0200},
+  biburl     = {https://dblp.org/rec/journals/corr/abs-2005-01643.bib},
+  bibsource  = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{fedus2020revisiting,
+  title        = {Revisiting fundamentals of experience replay},
+  author       = {Fedus, William and Ramachandran, Prajit and Agarwal, Rishabh and Bengio, Yoshua and Larochelle, Hugo and Rowland, Mark and Dabney, Will},
+  booktitle    = {International Conference on Machine Learning},
+  pages        = {3061--3071},
+  year         = {2020},
+  organization = {PMLR}
+}
+
+@inproceedings{kumar2022dr,
+  title     = {{DR}3: Value-Based Deep Reinforcement Learning Requires Explicit Regularization},
+  author    = {Aviral Kumar and Rishabh Agarwal and Tengyu Ma and Aaron Courville and George Tucker and Sergey Levine},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2022},
+  url       = {https://openreview.net/forum?id=POvMvLi91f}
+}
+
 @article{mnih2015humanlevel,
   added-at    = {2015-08-26T14:46:40.000+0200},
   author      = {Mnih, Volodymyr and Kavukcuoglu, Koray and Silver, David and Rusu, Andrei A. and Veness, Joel and Bellemare, Marc G. and Graves, Alex and Riedmiller, Martin and Fidjeland, Andreas K. and Ostrovski, Georg and Petersen, Stig and Beattie, Charles and Sadik, Amir and Antonoglou, Ioannis and King, Helen and Kumaran, Dharshan and Wierstra, Daan and Legg, Shane and Hassabis, Demis},

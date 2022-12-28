@@ -1,135 +1,12 @@
 
 \section{Appendix}
 
-\subsection{Notation}
-
-\begin{tabular}{rl p{4in}}\hline\hline
-  \multicolumn{2}{c}{Symbol} & Description
-  \\\hline
-  $n$                        & $\in\mathbb Z^+$ & Number of states.
-  \\  $m$ & $\in\mathbb Z^+$ & Number of features.
-  \\  $\pi$ & $\in\mathbb R^{n}$ & on-policy distribution.
-  \\  $\mu$ & $\in\mathbb R^{n}$ & sampling distribution, may be on- or off-policy.
-  \\  $\upsilon$ & : $\mathbb R^+ \to \mathbb R^{n}$ & apparent distribution induced by $\eta$-regularizing the emphatic correction of off-policy $\mu$ to on-policy $\pi$
-  \\  $\eta$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter
-  \\  $\eta_m$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter for emphasis model in COF-PAC (the Emphatic algorithm we analyze)
-  \\  $\eta_v$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter for value model in COF-PAC (the Emphatic algorithm we analyze)
-  \\  $p$ & $\in[0, 1]$ & distribution parameter used to express a family of possible sampling distributions.
-  \\  $\Phi$ & $\in \mathbb R^{[n\times m]}$ & Feature basis for the value function
-  \\  $\hat w$ & $\in \mathbb R^{[m\times 1]}$ & Linear weights for value function, fit using least-squares regression of $V$ on $\Phi$.
-  \\  $w^*(\eta)$ & $\in \mathbb R^{[m\times 1]}$ & Linear weights for value function, learned using TD.
-  \\  $\Phi w^*(\eta)$ & $\in \mathbb R^{[n\times 1]}$ & Learned value function
-  \\  $V$ & $\in \mathbb R^{[n\times 1]}$ & True value function
-  \\  $\|V\|$ & $\in \mathbb R$ & Error from guessing zeros, equivalent to the threshold for a vacuous example
-  \\  $\|x\|$ & $\in\mathbb R^+_0$ & $\ell_2$-norm of vector or matrix $x$, equal to $\sqrt{x^\top x}$
-  \\  $\|x\|_D$ & $\in\mathbb R^+_0$ & $\ell_2$-norm of vector or matrix $x$ under $D$, equal to $\sqrt{x^\top D x}$
-  \\ \hline\hline
-\end{tabular}
-
-
 \subsection{Example Details}
-
-We provide a more detailed explanation of our examples.
 
 \subsubsection{``Vacuous'' models}
 \label{sec:choiceoffailure}
 Without $\ell_2$ regularization, our linear model fails with asymptotic error. As this penalizes the $\ell_2$-norm of the learned weights, this removes the asymptote and so we can no longer use the existence of an asymptote as evidence of failure. Instead, we propose a different definition of failure by noting that, in the limiting case, regularization drives the learned weights to zero ($\lim_{\eta\to\infty} w^*(\eta) = \vec 0$). The learned value function $\Phi\cdot\vec 0 = \vec 0$ has no information about the true value function. We argue that if the error with any $\eta\in\mathbb R^+$ is never better than this case then the model is vacuous and hence adopt the threshold error of $\|\Phi\cdot\vec 0 - V\| = \|V\|$ to call a model vacuous. This explains the failure condition in Equation~\ref{eqn:vacuoustd}.
 
-\subsubsection{Details of regularization example}
-\label{sec:rrdetails}
-
-This provides numeric details for Example~\ref{ex:withrr}.
-
-\begin{example}
-  \label{ex:withrrdetails}
-  When TD is regularized, there may exist some off-policy distribution at which TD learns a vacuous model. In notation:
-  \begin{align}
-    \|\Phi w^*(\eta) - V\| & \geq \lim_{\eta\to\infty} \|\Phi w^*(\eta) - V \| = \|\Phi \vec 0 - V \| = \|V \| & \forall \eta\in\mathbb{R}_0^+
-  \end{align}
-
-  \proof We use the same setting as in Section~\ref{sec:introduce_example}.
-  We observe that $\hat w = [1, -1]^\top$ minimizes the least-squares error $\|\Phi \hat w - V\|$, and further observe that a sufficient (but not necessary) condition for a solution to be vacuous is that $\hat w^\top w^*(\eta) \leq 0$. Solving:
-  \begin{align}
-    0= & ~ \hat w^\top w^*(\eta) =
-    \frac{\eta p-0.233 \eta-0.304 p^2+0.276 p-0.025}{\eta^2+1.44 \eta p+0.215 \eta-0.193 p^2+0.175 p-0.016}
-    \implies p \in \{0.102636, \ldots\}
-  \end{align}
-  We verify that TD is vacuous at $p=0.102636$ by computing the TD error at convergence:
-  \begin{align}
-    \left. \|\Phi w^*(\eta) - V\|^2 \right|_{p=\tilde p} & =
-    \frac{\eta^2 (0.148 + 0.744 \eta + \eta^2)}{ \eta^2 (0.132 + 0.727 \eta + \eta^2)} \|V\|^2 \geq \|V\|^2\quad(\forall \eta \in \mathbb R^+) \label{eqn:example1error}
-  \end{align}
-  Since the fraction term in Equation~\ref{eqn:example1error} is obviously improper, we can conclude that our example will always have at least $\|V\|$ error over all $\eta$, and is therefore vacuous. \qed
-\end{example}
-We note that the error is not defined at $\eta=0$ because this corresponds to a model divergence similar to our introductory example. In practice, the TD fixed point will still converge to a vacuous solution:
-\begin{align}
-  \lim_{\eta->0} \|\Phi w^*(\eta) - V\|^2 & = \sfrac{0.148}{0.132} \|V\|^2 > \|V\|^2
-\end{align}
-
-
-\subsubsection{Additional simple regularization example}
-\label{sec:withrr2}
-
-We present a second example where the error is stationary with respect to the regularization parameter. This is worse than Example~\ref{ex:withrrdetails} because we are able to show that the point the model converges to is \emph{independent} of regularization.
-
-\begin{example}
-  \label{ex:withrr2}
-  When TD is regularized, there may exist some off-policy distribution at which the TD fixed point is independent of the regularization parameter.
-
-  \proof We use the same setting as in Section~\ref{sec:introduce_example}, except the value function is $V = [1,~1,~1.05]^\top$ and basis $\Phi$ selected to have small representation error $\|\Pi_D V - V\| \leq \epsilon$:
-  \begin{align}
-    \Phi & = \begin{bmatrix}
-               1                              & 0                               \\
-               0                              & -1                              \\
-               \sfrac{1}{2} (1.05 + \epsilon) & -\sfrac{1}{2} (1.05 + \epsilon) \\
-             \end{bmatrix} & \text{where $\epsilon > 0$}
-  \end{align}.
-  We set $\epsilon = 10^{-4}$ and write down $w^*(\eta)$ in terms of $g$, a scalar function of $\eta$ and $p$:
-  \begin{align}
-    w^*(\eta) & = (A+\eta I)^{-1} \vec b =
-    \frac{(2\eta + p)(0.925 - 1.29p)}{100\eta^2+47.4p\eta +1.85\eta - 1.30p^2 + 0.927p}
-    \cdot \begin{bmatrix} \phantom{-}1 \\ -1 \end{bmatrix}
-    \equiv g(p,\eta) \begin{bmatrix} \phantom{-}1 \\ -1 \end{bmatrix} \label{eqn:wstarrr2}
-  \end{align}
-  When $g(p,\eta) \leq 0$, the TD solution is vacuous. We show that directly:
-  \begin{align}
-    \|\Phi w^*(\eta) - V\| & =
-    \|g(p,\eta) \Phi*[1, -1]^\top - \Phi*[1, -1]^\top\|
-    = \|g(\eta) - 1\|\cdot\|V\|
-  \end{align}
-  When $g(p,\eta) \leq 0$, then $\|g(p,\eta) - 1\| \geq 1$ for all $\eta$ and the TD solution is vacuous. We find such a solution by noting the numerator has two roots in $p$, one of which corresponds to a vacuous solution:
-  $g(0.715083, \eta) = 0~(\forall \eta)$, and this completes the example! In this setting, when TD updates follow the sampling distribution $p\approx0.715083$, the error of the model at convergence is always $\|V\|$ regardless of regularization. Our example converges to the same vacuous value regardless $\eta$. \qed
-\end{example}
-
-\begin{figure}
-  \input{Pitfalls/fixedpoint_p/fixedpoint.tex}
-  \caption{We plot TD error against $p$ for our three-state MP with $\epsilon=10^{-4}$. This shape is similar to that in \cite{kolter2011fixed}. There is a minima close to $\pi$ ($p\approx 0.5$), and an asymptote at the singularity ($p\approx 0.715$). At different levels of regularization the error function moves between the unregularized case ($\eta=0$) and the limiting case ($\eta\to\infty$), as analyzed in Section~\ref{sec:rrplotexplained}. We show that there is some $p$ at which the error is never below the $\eta\to\infty$ line. }
-  \label{fig:fixedpointp}
-\end{figure}
-
-In Figure~\ref{fig:fixedpointp}, we can see that the TD error intersects the $\eta\to\infty$ line immediately before and after the singularity. Our counterexample corresponds to the second root (that is, the intersection point at higher $p$.) This is because that corresponds to the stationary point between the asymptote that is crushed and the error on the right that increases. If our simpler derivation proved unsatisfying, we can also derive this counterexample using this fact:
-\begin{align}
-  0 & = \frac{d}{d \eta} \hat w^\top w^*(\eta)
-  = \frac{p(p - 0.715083)}{p(p - 0.714303)^2}
-\end{align}
-
-From this, we can easily see that the counterexample is at $p = 0.715083$.
-And this completes the example! We have discovered some $p$ at which the TD error is always at least $\|V\|$, regardless of regularization, and so our example learns a vacuous value function.
-
-
-\subsubsection{\emph{Breaking the Deadly Triad} and our counterexample.}
-
-In light of our counterexample we examine the work of \cite{zhang2021breaking} in which the authors derive a bound for the regularized TD error under a novel double-projection update rule. We apply our example to their bound $b$ to show that their method permits vacuous TD solutions and doesn't quite break the deadly triad. Starting from Equation~\ref{eqn:zhangbounds}:
-\begin{align}
-  \|\Phi w^*(\eta) - V\| \leq b(\eta, \xi) & = \frac{1}{\xi} \left(\frac{\sigma_{\max}(\Phi)^2}{\sigma_{\min}(\Phi)^4 \sigma_{\min}(D)^{2.5}} \cdot \|V\|\eta + \| \Pi_D V - V \| \right)
-  \\ & = \sfrac{1}{\xi}\cdot(38.0\eta + 8.07\times 10^{-5})
-  \intertext{for $\xi\in[0, 1]$, where $\sigma_{\max}$ and $\sigma_{\min}$ denote the largest and smallest singular value respectively. Theorem 2 from \cite{zhang2021breaking} bounds $\eta$, and therefore also $b$:}
-  \eta > \arg\,\inf_{\eta} \|\Phi - C_0\|  & = 0.367 (6.86 - 13.7\xi + 6.86\xi^2)^{-1}
-  \\  \inf_{\xi} b(\xi, \eta) & = 13.8 = 7.86*\|V\|
-\end{align}
-Under our example, their method bounds the error at no more than $7.86*\|V\|$, which is a very loose bound that permits vacuous solutions. This illustrates the risk of trying to regularize away singularities, particularly in theoretical work.
-
-Investigating the cause of the loose bounds reveals that the presence of $\sigma_{\min}(D)^{2.5}$ in \ref{eqn:zhangbounds} is largely responsible. As $D$ is a diagonal matrix encoding the sampling distribution, $\sigma_{\min}(D)$ is the smallest sampling rate of any state, and so the bound must be at least $\frac{\eta}{\xi n^{2.5}}$ for any perfectly representable $n$-state MP. Unfortunately, this appears to be fundamental limit caused by finding a linear bound to an error that scales non-linearly, and following their derivation in the appendix does not readily admit a way to improve this.
 
 \subsubsection{Small-Eta Error}
 Our simplified example allows us to show this easily.
@@ -218,7 +95,7 @@ In the construction of COF-PAC, a key assumption made is that both the emphasis 
 \subsection{Applied to multi-layer networks}
 \label{sec:multilayerapp}
 
-We also use a variant of our example to study how the deadly triad appears in multi-layer networks. As illustrated in Figure~\ref{fig:multilayermdp}, we replace each self-loop with two additional states, forming a clique with the original state. The resultant MP has $n=9$ states; we define a deterministic obervation function $o : \mathcal S \to \mathbb B^6$. where each state is encoded as the concatenation of the one-hot vector of its subscripts. The value function is assigned pseudo-randomly in range $[-1, 1]$, and a consistent reward function is assigned.
+We also use a variant of our example to study how the deadly triad appears in multi-layer networks. As illustrated in Figure~\ref{fig:multilayermdp}, we replace each self-loop with two additional states, forming a clique with the original state. The resultant MP has $n=9$ states; we define a deterministic observation function $o : \mathcal S \to \mathbb B^6$. where each state is encoded as the concatenation of the one-hot vector of its subscripts. The value function is assigned pseudo-randomly in range $[-1, 1]$, and a consistent reward function is assigned.
 We select the family of sampling distributions $\mu \propto [4p,~1p,~1p,4p,~1p,~1p,8(1-p),~4(1-p),~4(1-p)]$, where the on-policy distribution is at $p=0.5$.
 %The on-policy distribution is $\pi = \sfrac{1}{28} [4,~1,~1,4,~1,~1,8,~4,~4]$; 
 
@@ -244,9 +121,9 @@ In addition to the example in Figure~\ref{fig:mlperfeta}, we present an addition
   \label{fig:twomultilayerperfs}
 \end{figure}
 
-\subsection{Overparameterization does not solve this problem}
+\subsection{Over-parameterization does not solve this problem}
 
-Baird's counterexample \cite{baird1993counterexample} shows how, in the linear case, that off-policy divergence can also happen under overparameterization, as long as some amount of function approximation occurs. It is not obvious that this conclusion persists in the neural network case, so we include an additional example showing that the parameterization doesn't resolve small-$\eta$ divergence.
+Baird's counterexample \cite{baird1993counterexample} shows how, in the linear case, that off-policy divergence can also happen with over-parameterization, as long as some amount of function approximation occurs. It is not obvious that this conclusion persists in the neural network case, so we include an additional example showing that the parameterization doesn't resolve small-$\eta$ divergence.
 
 In Figure~\ref{fig:twomultilayerperfs_k} we plot models with 3 to 13 nodes in the hidden layer. For reference, the MDP has 9 states, so some models under-parameterize and some models over-parameterize. We observe that, in the low-regularization regime, increasing the number of parameters improves the error slightly. However, increasing the number of parameters in the hidden layer does not change the behavior in the the small-$\eta$ divergence region.
 
@@ -279,13 +156,7 @@ We use a three-, five- and nine-state Markov Processes to generate examples for 
 
 \subsection{Three-state}
 The construction of the three-state MDP is described in Section~\ref{sec:introduce_example} and illustrated in Figure~\ref{fig:mdp_illustration}. This example is used in Examples~\ref{ex:withrr} and \ref{ex:emph} For completeness, the transition matrix is:
-\begin{align}
-  \frac{1}{4}\begin{bmatrix}
-               1 & 1 & 2 \\ 1 & 1 & 2 \\ 1 & 1 & 2
-             \end{bmatrix}
-\end{align}
-
-\subsubsection{Nine-state}
+>\subsubsection{Nine-state}
 This example is used to train neural networks. The construction is based on the three-state example and the construction is illustrated in Figures \ref{fig:mdp9_illustration} and \ref{fig:multilayermdp}. The transition matrix (with omitted zeros) is:
 \begin{align}
   \begin{bmatrix}
