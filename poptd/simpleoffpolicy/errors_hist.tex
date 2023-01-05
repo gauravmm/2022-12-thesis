@@ -1,0 +1,51 @@
+% \begin{figure}[t]
+%     \centering
+%     \input{poptd/simpleoffpolicy/errors.tex}
+%     % \vspace{-1.75em}
+%     \caption{The distribution of Q-function error for naive and POP Q-Learning applied to Figure~\ref{fig:sopmap} over 100 random initializations. POP-Q learns the Q-function with substantially less error. }
+%     \label{fig:soperr}
+% \end{figure}
+
+\begin{tikzpicture}
+    \begin{groupplot}[
+            group style={
+                    % set how the plots should be organized
+                    group size=1 by 2,
+                    % only show ticklabels and axis labels on the bottom
+                    x descriptions at=edge bottom,
+                    % set the `vertical sep' to zero
+                    vertical sep=0pt,
+                },
+            width=1.1\columnwidth,height=.4\columnwidth,
+            ybar,
+            ymin=0, ymax=0.6,
+            yticklabel=\empty,
+            xmin=-2, xmax=7,
+        ]
+
+        % Naive
+        \nextgroupplot[
+            ylabel=Naive Q,
+            xlabel=Error,
+        ]
+
+        \addplot +[hist={bins=18,density,data min = -2,data max = 7,},color=naivetds,draw=naivetd] table [y index=2] {poptd/simpleoffpolicy/qval_err.dat};
+
+        \node at (axis cs:-1.22,0.6) [anchor=north west] {On-Policy};
+        % \node at (axis cs:6.12,0.8) [anchor=north west] {$\|V\|_2$};
+
+        \draw[dotted,thick] (axis cs:-1.22,0.) -- (axis cs:-1.22,1.6);
+        % \draw[dotted,thick] (axis cs:6.12,0.) -- (axis cs:6.12,1.6);
+
+        % POP-Q-Learning
+        \nextgroupplot[
+            xlabel=log Error,
+            ylabel=POP-Q,
+        ]
+        \addplot +[hist={bins=18,density,data min = -2,data max = 7,},color=poptds,draw=poptd] table [y index=1] {poptd/simpleoffpolicy/qval_err.dat};
+
+        \draw[dotted,thick] (axis cs:-1.22,0.) -- (axis cs:-1.22,1.6);
+        % \draw[dotted,thick] (axis cs:6.12,0.) -- (axis cs:6.12,1.6);
+    \end{groupplot}
+
+\end{tikzpicture}

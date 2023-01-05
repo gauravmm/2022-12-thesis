@@ -11,8 +11,20 @@
 \theoremstyle{exampstyle} \newtheorem{example}{Example}
 \addtolength{\floatsep}{-8pt}
 
+
+
+\makeatletter
+\DeclareRobustCommand{\sqcdot}{\mathbin{\mathpalette\morphic@sqcdot\relax}}
+\newcommand{\morphic@sqcdot}[2]{%
+    \sbox\z@{$\m@th#1\centerdot$}%
+    \ht\z@=.33333\ht\z@
+    \vcenter{\box\z@}%
+}
+\makeatother
+
+
 \renewcommand{\proofname}{Details}
 \newcommand{\diag}[0]{\text{diag}}
-\newcommand{\E}{\textbf{E}}
 \newcommand{\tr}{\text{tr}}
 \newcommand{\subsectionsubtitle}[1]{\vspace{-0.5em}\textit{#1}\vspace{0.5em}}
+\newcommand*{\coloneqq}[0]{:=}

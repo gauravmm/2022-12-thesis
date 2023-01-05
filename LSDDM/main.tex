@@ -85,7 +85,7 @@ where $\mathsf{Proj(x;\mathcal{C})}$ denotes the orthogonal projection of $x$ on
 
 \input{LSDDM/figures/stable_nn_construction.tex}
 
-\subsection{Properties of the Lyapunov function $V$}\label{sec:lyapunov_properties}
+\subsection[Properties of the Lyapunov function]{Properties of the Lyapunov function $V$}\label{sec:lyapunov_properties}
 
 Although the treatment above seems to make the problem of learning stable systems quite straightforward, the subtlety of the approach lies in the choice of the function $V$. Specifically, $V$ needs to be positive definite and needs to have \emph{no local optima except $0$}. This is due to Lyapunov decrease condition: recall that we are attempting to guarantee stability to the equilibrium point $x=0$, yet the decrease condition imposed upon the dynamics means that $V$ is decreasing along trajectories of $f$.  If $V$ has a local optimum away from the origin, the dynamics can in theory get stuck in this location; this manifests itself by the $\|\nabla V(x)\|_2^2$ term going to zero, which results in the dynamics becoming undefined at the optima.
 

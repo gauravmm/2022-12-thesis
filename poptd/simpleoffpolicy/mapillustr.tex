@@ -1,0 +1,42 @@
+\begin{tikzpicture}
+    \tikzset{
+        table/.style={
+                matrix of nodes,
+                row sep=-\pgflinewidth,
+                column sep=-\pgflinewidth,
+                nodes={
+                        rectangle,
+                        draw=black,
+                        align=center,
+                        text width=2.5em,
+                    },
+                minimum height=2.5em,
+                text depth=0.5ex,
+                text height=2ex,
+                nodes in empty cells,
+            }
+    }
+
+    \matrix (m) [table,text width=6em]
+    {
+         &   &   & S \\
+         & X &   & X \\
+         &   &   &   \\
+         &   & X & G \\
+    };
+
+    \draw [-to,color=datapolicy,line width=1.2pt,densely dotted]
+    ([yshift=2pt,xshift=-4pt]m-1-4.center) -- ([yshift=2pt]m-1-1.center)
+    ([yshift=2pt]m-1-1.center) -- (m-4-1.center)
+    (m-4-1.center) -- (m-4-2.center)
+    (m-4-2.center) -- ([yshift=-2pt]m-3-2.center)
+    ([yshift=-2pt]m-3-2.center) -- ([yshift=-2pt,xshift=-3pt]m-3-4.center)
+    ([yshift=-2pt,xshift=-3pt]m-3-4.center)[shorten >=4pt] -- ([xshift=-3pt]m-4-4.center);
+
+    \draw [-to,color=optimpolicy,line width=1.2pt]
+    ([yshift=-2pt,xshift=-4pt]m-1-4.center) -- ([yshift=-2pt]m-1-3.center)
+    ([yshift=-2pt]m-1-3.center) -- ([yshift=2pt]m-3-3.center)
+    ([yshift=2pt]m-3-3.center) -- ([yshift=2pt,xshift=3pt]m-3-4.center)
+    ([yshift=2pt,xshift=3pt]m-3-4.center)[shorten >=4pt] -- ([xshift=3pt]m-4-4.center);
+
+\end{tikzpicture}

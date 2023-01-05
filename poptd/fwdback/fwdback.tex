@@ -1,0 +1,26 @@
+\begin{tikzpicture}
+    \begin{axis}[
+            width=\columnwidth,height=.6\columnwidth,
+            xmin=1, xmax=1000,
+            ymin=0.0, ymax=5.5,
+            ylabel=Reward ($\times10^3$),
+        ]
+
+        \addplot [name path=poptdU,color=poptd!20] table [x=I,y expr=(\thisrow{POPS}+\thisrow{POPCIS})/1000] {poptd/fwdback/fwdback.dat};
+        \addplot [name path=poptdL,color=poptd!20] table [x=I,y expr=(\thisrow{POPS}-\thisrow{POPCIS})/1000] {poptd/fwdback/fwdback.dat};
+        \addplot[poptd!20] fill between[of=poptdU and poptdL];
+        %\addplot[pattern color=poptd!20,pattern=north west lines,] fill between[of=poptdU and poptdL];
+
+        \addplot [name path=naivetdU,color=naivetd!20] table [x=I,y expr=(\thisrow{NOPOPS}+\thisrow{NOPOPCIS})/1000] {poptd/fwdback/fwdback.dat};
+        \addplot [name path=naivetdL,color=naivetd!20] table [x=I,y expr=(\thisrow{NOPOPS}-\thisrow{NOPOPCIS})/1000] {poptd/fwdback/fwdback.dat};
+        \addplot[pattern color=naivetd!20,pattern=north east lines,] fill between[of=naivetdU and naivetdL];
+
+        \addplot [color=poptd] table [x=I,y expr=\thisrow{POPS}/1000] {poptd/fwdback/fwdback.dat};
+        \addplot [color=naivetd] table [x=I,y expr=\thisrow{NOPOPS}/1000] {poptd/fwdback/fwdback.dat};
+
+
+        \node at (axis cs:1000,4.500) [anchor=south east] {{\color{poptd} POP-Q}};
+        \node at (axis cs:1000,2.500) [anchor=north east] {{\color{naivetd} Naive Q}};
+
+    \end{axis}
+\end{tikzpicture}

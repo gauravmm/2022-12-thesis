@@ -1,0 +1,51 @@
+\begin{tikzpicture}
+    \begin{groupplot}[
+        group style={
+                % set how the plots should be organized
+                group size=1 by 2,
+                % only show ticklabels and axis labels on the bottom
+                x descriptions at=edge bottom,
+                % set the `vertical sep' to zero
+                vertical sep=0pt,
+            },
+        width=1.\columnwidth,
+        height=.5\columnwidth,
+        xmin=0, xmax=1,
+        xlabel={Distrib. param. $h$, where $\pi = [\sfrac h 2, \sfrac h 2, 1-h]$},
+        ]
+
+        \nextgroupplot[
+            ylabel={$\log_{10}$ Error},
+            ymode=log,
+            ymin=0.00001, ymax=1000,
+            yticklabels={-5,-1,3}
+        ]
+
+        \addplot [color=poptd] table [x index=0,y index=1] {poptd/threestate/export_threestate.dat};
+        \node at (axis cs:.75,0.0001) [anchor=south west,color=poptd] {POP-TD};
+
+        \addplot [color=naivetd,dashed] table [x index=0,y index=2] {poptd/threestate/export_threestate.dat};
+        \node at (axis cs:.75,1.) [anchor=north west,color=naivetd] {Naive TD};
+        % \addlegendentry{Naive TD}
+
+        \node at (axis cs:.514,1000) [anchor=north east] {$F(s)\succcurlyeq 0$};
+        \node at (axis cs:.514,1000) [anchor=north west] {$F(s)\not\succcurlyeq 0$};
+        \draw[dotted,thick] (axis cs:0.514,0.0000001) -- (axis cs:0.514,1000000);
+
+        \nextgroupplot[
+            ylabel={effective distrib. $p$},
+            ymin=0., ymax=1.,
+            yticklabels={,0,.2,.4,.6,.8,}
+        ]
+
+        \addplot [color=poptd] table [x index=0,y index=3] {poptd/threestate/export_threestate.dat};
+        \node at (axis cs:.75,.5) [anchor=north east,color=poptd] {POP-TD};
+
+        \addplot [color=naivetd, domain=0:1,dashed] {x} ;
+        \node at (axis cs:.75,.75) [anchor=south east,color=naivetd] {Naive TD};
+
+        \draw[dotted,thick] (axis cs:0.514,0.) -- (axis cs:0.514,1);
+
+    \end{groupplot}
+
+\end{tikzpicture}

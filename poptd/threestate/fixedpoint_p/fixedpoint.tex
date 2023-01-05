@@ -1,0 +1,24 @@
+\begin{tikzpicture}
+    \begin{axis}[
+        scale only axis,
+        width={\columnwidth-18  mm},height={.3\columnwidth},
+        tick align=outside,
+        enlargelimits=false,
+        ymode=log,
+        mark=none,
+        ymax=100,
+        xlabel={$h$ in sampling distribution $\mu=[\sfrac h2, \sfrac h2, 1-h]$},
+        ylabel={TD error},
+        ]
+        \addplot[color=blue,thick] table [x=p, y=err] {poptd/threestate/fixedpoint_p/td_1e-inf.dat};
+
+        \node[anchor=south west,rotate=90,gray] at (axis cs:0.725, .0002) {$p=0.715$};
+        \draw[dotted,very thick,gray] (axis cs:0.715, 0.0001) to[] (axis cs:0.715, 100);
+        \node[anchor=south west,rotate=90,gray] at (axis cs:0.514, .002) {$p\approx 0.5$};
+        \draw[dotted,very thick,gray] (axis cs:0.514, 0.0001) to[] (axis cs:0.514, 100);
+
+        \node at (axis cs:0.0,100) [anchor=north west] {$F(s)\succcurlyeq 0$};
+        \node at (axis cs:1.0,100) [anchor=north east] {$F(s)\not\succcurlyeq 0$};
+
+    \end{axis}
+\end{tikzpicture}

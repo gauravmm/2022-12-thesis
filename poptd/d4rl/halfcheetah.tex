@@ -1,0 +1,27 @@
+\begin{tikzpicture}
+    \begin{axis}[
+            width=1.\columnwidth,height=.6\columnwidth,
+            xmin=0, xmax=1600,
+            ymin=0.19, ymax=0.36,
+            ylabel={Normalized Reward},
+            ytick={0.2,0.3,0.4},
+            xtick={0, 400, 800, 1200, 1600}
+        ]
+
+        \addplot [name path=poptdU,color=poptd!20] table [x=step,y=ci_upper] {poptd/d4rl/returns_halfcheetah-random-v2_pop.tsv};
+        \addplot [name path=poptdL,color=poptd!20] table [x=step,y=ci_lower] {poptd/d4rl/returns_halfcheetah-random-v2_pop.tsv};
+        \addplot[poptd!20] fill between[of=poptdU and poptdL];
+
+        \addplot [name path=naivetdU,color=naivetd!20] table [x=step,y=ci_upper] {poptd/d4rl/returns_halfcheetah-random-v2_nopop.tsv};
+        \addplot [name path=naivetdL,color=naivetd!20] table [x=step,y=ci_lower] {poptd/d4rl/returns_halfcheetah-random-v2_nopop.tsv};
+        \addplot[pattern color=naivetd!20,pattern=north east lines,] fill between[of=naivetdU and naivetdL];
+
+        \addplot [color=poptd] table [x=step,y=average_return] {poptd/d4rl/returns_halfcheetah-random-v2_pop.tsv};
+        \addplot [color=naivetd] table [x=step,y=average_return] {poptd/d4rl/returns_halfcheetah-random-v2_nopop.tsv};
+
+
+        \node at (axis cs:1600,0.32) [anchor=south east] {{\color{poptd} POP-Q}};
+        \node at (axis cs:1600,0.27) [anchor=north east] {{\color{naivetd} Naive Q}};
+
+    \end{axis}
+\end{tikzpicture}

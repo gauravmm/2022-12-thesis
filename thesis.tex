@@ -25,17 +25,29 @@
 \usepackage[nottoc,numbib]{tocbibind} % Add bibliography to TOC
 \usepackage[mathlines]{lineno}
 \usepackage{tabularray}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage{todonotes}
 
 \newenvironment{abstract}{}{}
 \usepackage{abstract}
 
 \DeclareMathOperator*{\minimize}{minimize}
 \newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
+\usepgfplotslibrary{fillbetween}
+\usetikzlibrary{matrix}
+\usetikzlibrary{patterns}
 
 \input{latexhacks/linenomath.tex}
 \input{latexhacks/addplotgraphicsnatural.tex}
 \input{latexhacks/mathstyle.tex}
 \input{latexhacks/viridis.tex}
+\input{latexhacks/math_commands.tex}
 
 %\newfontfamily\OpenSans{Open Sans}[Scale=MatchLowercase]
 %\newfontfamily\SourceSerifPro{Source Serif Pro}[Scale=MatchLowercase,Ligatures=TeX]
@@ -159,6 +171,8 @@ We conclude with a discussion on future directions that our work on stable model
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Projected Off-Policy TD for Offline Reinforcement Learning}
+
+\input{poptd/poptd.tex}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
