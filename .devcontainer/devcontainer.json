@@ -1,0 +1,10 @@
+{
+    "name": "latex-env",
+    "extensions": [
+        "james-yu.latex-workshop",
+        "ms-azuretools.vscode-docker",
+        "streetsidesoftware.code-spell-checker"
+    ],
+    "dockerFile": "Dockerfile",
+    "mounts": []
+}
