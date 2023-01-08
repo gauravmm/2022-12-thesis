@@ -307,7 +307,7 @@ with
 
 \section{Experiments and Discussion}
 
-We first apply POP-TD to a well-understood example so that we can directly illustrate the how it resamples TD updates to a ``safe'' distribution. We use the simple three-state task from \cref{fig:threestate}, including their specified transition function, value function, and basis. Since this is a policy evaluation task, there is no policy to be separately learned.
+We first apply POP-TD to a well-understood example so that we can directly illustrate the how it resamples TD updates to a ``safe'' distribution. We use the simple three-state task from \cref{fig:threestate}, including the specified transition function, value function, and basis. Since this is a policy evaluation task, there is no policy to be separately learned.
 
 For illustration purposes, we select the family of distributions $\pi = (\sfrac h 2, \sfrac h 2, 1- h)$ parameterized by $h \in [0, 1]$.
 This characterizes the possible distributions of data that we will present to POP-TD and naive TD in this experiment. The on-policy distribution corresponds to $h_o\approx 0.51$, and divides the family of distributions into a left subset ($h \leq h_o$) where KNEC holds and a right subset ($h_o > 0.5$) where KNEC does not. This is immediately apparent in \cref{fig:threestate}, where we plot the error at convergence from running naive- and POP-TD above, and the effective distribution of TD updates after reweighing below.
@@ -412,27 +412,3 @@ We prove that, under mild assumptions, our method guarantees that the off-policy
 In our small-scale experiments we show that this method significantly decreases the approximation error for certain sampling functions, while never significantly increasing the error.
 We also show that this method can be combined with Conservative Q-Learning to improve performance on .... % // TODO: Do more experiments
 
-\section{Three-state Markov Process Example}
-\label{app:threestate}
-
-\begin{figure}[t]
-  \centering
-  \input{poptd/threestate/fixedpoint_p/fixedpoint.tex}
-  \caption{The error at the TD fixed point for the three-state Markov process we analyze. The on-policy distribution is at $h\approx0.5$, the set of distributions on and to the left of the on-policy distribution satisfies KNEC, while the right does not. }
-  \label{fig:threestatefixedpoint}
-\end{figure}
-
-
-\citet{manek2022pitfalls} present and analyze a three-state Markov chain with predictable divergence conditions. The example consists of the MDP in \cref{fig:threestate}, the value function $V = [1,~1,~1.05]^\top$, discount $\gamma = 0.99$, reward $R \gets (I-\gamma P)V$, and basis $\Phi$:
-\begin{align}
-  \Phi & = \begin{bmatrix}
-             1                              & 0                               \\
-             0                              & -1.                             \\
-             \sfrac{1}{2} (1.05 + \epsilon) & -\sfrac{1}{2} (1.05 + \epsilon) \\
-           \end{bmatrix}
-\end{align}
-The basis includes the representation error term $\epsilon = 10^{-4}$.
-
-For illustration purposes, we select the family of distributions $\pi = (\sfrac h 2, \sfrac h 2, 1- h)$ parameterized by $h$. The on-policy distribution corresponds to $h_o\approx 0.5$), and also divides the family of distributions into a subset where KNEC holds (at $h \leq h_o$) and into a subset where KNEC does not hold $h > h_o$. To illustrate this, we directly calculate the TD fixed point and plot the corresponding error in \cref{fig:threestatefixedpoint}.
-
-From \cref{fig:threestatefixedpoint} we can see how the error is smallest when on-policy, and increases away from that. We also note how divergence happens at a particular distribution $(h\approx 0.715)$, and distributions near that have large error. We also note that KNEC represents a convex subset of distributions, and so it is a conservative under-estimate of non-expansive distributions. For example, there are regions on the right of the plot where the error is small but do not satisfy KNEC.
