@@ -1,6 +1,6 @@
 \begin{tikzpicture}
     \begin{axis}[
-            width=.7\columnwidth,height=.7\columnwidth,
+            width=1.\columnwidth,height=1.\columnwidth,
             xmin=-4, xmax=7,
             ymin=-4, ymax=7,
             xlabel=log Naive Error,
@@ -19,8 +19,10 @@
         \addplot[only marks,mark=+,mark options={viridis09}] table[x=log_error_naive, y=log_error_pop] {poptd/simpleoffpolicy/qval_err.dat};
 
 
-        \node at (axis cs:-1.22,7) [anchor=north west,color=viridis02] {Mean On-Policy Error};
-        \draw[viridis02,dotted,thick] (axis cs:7,-1.22) -- (axis cs:-1.22,-1.22) -- (axis cs:-1.22,7);
+        \node at (axis cs:-1.22,7) [anchor=north west,color=black!50!viridis02] {Mean On-Policy Error};
+        %\draw[black!50!viridis02,dotted,thick] (axis cs:7,-1.22) -- (axis cs:-1.22,-1.22) -- (axis cs:-1.22,7);
+        \draw[black!50!viridis02,dotted,thick] (axis cs:7,-1.22) -- (axis cs:-5,-1.22);
+        \draw[black!50!viridis02,dotted,thick] (axis cs:-1.22,-5) -- (axis cs:-1.22,7);
     \end{axis}
 
 \end{tikzpicture}

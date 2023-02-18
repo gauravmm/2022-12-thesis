@@ -185,7 +185,7 @@ We also evaluate the learned dynamics quantitatively varying $n$ and the time ho
 
 \subsection{Video Texture Generation}
 
-Finally, We apply our technique to stable video texture generation, using a Variational Autoencoder (VAE) \citep{kingma2013auto} to learn an encoding for images, and our stable network to learn a dynamics model in encoding-space.  Given a sequence of frames $(y_0, y_1, \ldots)$, we feed the network the frame at time $t$
+Finally, We apply our technique to stable video texture generation, using a Variational Auto-Encoder (VAE) \citep{kingma2013auto} to learn an encoding for images, and our stable network to learn a dynamics model in encoding-space.  Given a sequence of frames $(y_0, y_1, \ldots)$, we feed the network the frame at time $t$
 and train it to reconstruct the frames at time $t$ and $t+1$.  Specifically, we consider a VAE defined by the encoder $e : \mathcal{Y} \rightarrow \mathbb{R}^{2n}$ giving mean and variance $\mu, \log \sigma^2_t = e(y_t)$, latent state $z_t \in \mathbb{R}^n \sim \mathcal{N}(\mu_t, \sigma_t^2)$, and decoder $d: \mathbb{R}^n \rightarrow \mathcal{Y}$, $y_t \approx d(z_t)$.  We train the network to minimize both the standard VAE loss (reconstruction error plus a KL divergence term), but \emph{also} minimize the reconstruction loss of a next predicted state. We model the evolution of the latent dynamics at $z_{t+1} \approx f(z_t)$, or more precisely $y_{t+1} \approx d(f(z_t))$.  In other words, as illustrated in Figure~\ref{fig:vae_training}, we train the full system to minimize
 \begin{align}
 	\minimize_{e,d,\hat{f},V} \sum_{t=1}^{T-1} \biggl ( \mathsf{KL}(\mathcal{N}(\mu_t,\sigma_t^2 I\|\mathcal{N}(0,I)) + \mathbf{E}_z \bigl [ \|d(z_t) - y_t\|_2^2 + \| d(f(z_t)) - y_{t+1}\|_2^2 \bigr ] \biggr )

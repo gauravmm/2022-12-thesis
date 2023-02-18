@@ -27,6 +27,8 @@
 \usepackage{tabularray}
 \usepackage[capitalise,noabbrev]{cleveref}
 \usepackage{todonotes}
+\usepackage{algorithm,algorithmic}
+\usepackage{longtable}
 
 \newenvironment{abstract}{}{}
 \usepackage{abstract}
@@ -76,6 +78,18 @@
 \author{ Gaurav Manek }
 \date{\today}
 
+\pagestyle{fancy}
+% \fancyhead[L]{%
+%   % thank egreg for his help in comment
+%   \ifnum\value{chapter}=0\else\chaptername\ \thechapter\ --\ \fi\leftmark
+% }
+\fancyhead[EL]{\ifnum\value{chapter}=0\else\leftmark\fi}
+\fancyhead[ER]{}
+\fancyhead[OL]{}\endhead % all the lines above this will be repeated on every page
+\fancyhead[OR]{\rightmark}
+
+\setlength{\headheight}{13.6pt}
+
 \begin{document}
 \frontmatter
 
@@ -124,7 +138,7 @@ In this thesis, we investigate two different aspects of stability: the stability
 
 In the second and third chapters, we focus on stability issues in reinforcement learning. In the second chapter, we demonstrate that regularization, a common approach to addressing instability in temporal difference (TD) learning, is not always effective. We show that TD learning can diverge even when regularization is used and demonstrate this phenomenon in both standard examples and a novel problem we construct.
 
-In the third chapter, we propose a new resampling strategy called Projected Off-Policy TD, which resamples TD updates to come from a convex subset of "safe" distributions. We show how this approach can mitigate the distribution shift problem in offline RL and improve the performance of Conservative Q-Learning on a variety of datasets.
+In the third chapter, we propose a new resampling strategy called Projected Off-Policy TD, which resamples TD updates to come from a convex subset of "safe" distributions. We show how this approach can mitigate the distribution shift problem in offline RL and how it may improve the performance of Conservative Q-Learning on a variety of datasets.
 
 Overall, this thesis advances novel methods for dynamics model stability and training stability in reinforcement learning, and points to promising directions for future research on stability in this field.
 
@@ -180,7 +194,11 @@ We conclude with a discussion on future directions that our work on stable model
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Conclusion}
 
-In prior work, we have identified a gap in the literature: that the common use of regularization to prevent instability from off-policy TD is not guaranteed to help and may even be harmful. Hence we propose POP-TD, a new algorithm that resamples TD to be consistent with a distribution under which TD updates are non-expansive (at convergence). We show this algorithm is successful on toy examples, and propose that we use it as a basis for a new algorithm for offline/batch RL.  The remaining work involves designing and proving this algorithm, validating structural assumptions made in the design of POP-TD, and potentially proving convergence and providing error bounds for POP-TD.
+We have examined two notions of stability with a subtle relationship: that of learned dynamics models, and the training of reinforcement learning algorithms. In doing so, we have introduced new techniques in both areas, as well as filled in a gap in the literature on the unsuitability of regularization to solve instability in RL.
+
+One key gap in the RL literature that we hope to address in the future is how we should regularize deep RL in a principled manner. While our prior work shows that simple $\ell_2$ regularization can cause divergence, the literature is ripe for either adaptive regularization schemes that can detect and avoid pathological behavior, or for novel non-convex regularization that does not exhibit the same tendency to diverge.
+
+Separately, there remains a large gap in a key area within offline RL in dealing with the distributional shift problem. While there have been many recent advances in the field, these advances have been largely incremental, and the field remains ripe for a novel perspective that can address this. We propose that POP-TD is that novel perspective. The key insight that POP-TD brings to the field is that there are off-policy distributions that are safe to reweigh to. This is unlike the importance sampling and Emphatic-TD literatures, which seek to resample data to appear on-policy, no matter how far that is from the data distribution. With these novel POP techniques, we hope to allow offline RL to both (1) resample the data as little as possible thereby preserving performance, and (2) learn to generalize from a set of diverse and possibly even adversarial experts that complete tasks in mutually incompatible ways.
 
 \appendix
 \input{appendices/chapter.tex}

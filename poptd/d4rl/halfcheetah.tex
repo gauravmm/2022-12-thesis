@@ -2,26 +2,38 @@
     \begin{axis}[
             width=1.\columnwidth,height=.6\columnwidth,
             xmin=0, xmax=1600,
-            ymin=0.19, ymax=0.36,
+            ymin=0.19, ymax=0.33,
             ylabel={Normalized Reward},
-            ytick={0.2,0.3,0.4},
-            xtick={0, 400, 800, 1200, 1600}
+            ytick={0.2,0.24,0.28,0.32},
+            yticklabels={20,24,28,32},
+            xtick={0, 400, 800, 1200, 1600},
+            legend style={legend cell align=left,at={(0.5,-0.15)},anchor=north,legend columns=3},
         ]
 
-        \addplot [name path=poptdU,color=poptd!20] table [x=step,y=ci_upper] {poptd/d4rl/returns_halfcheetah-random-v2_pop.tsv};
-        \addplot [name path=poptdL,color=poptd!20] table [x=step,y=ci_lower] {poptd/d4rl/returns_halfcheetah-random-v2_pop.tsv};
-        \addplot[poptd!20] fill between[of=poptdU and poptdL];
+        \addplot [name path=poptdU,color=poptd!20] table [x=step,y expr=(\thisrow{ci_upper}-\thisrow{average_return})/2.828 + \thisrow{average_return},forget plot] {poptd/d4rl/returns_halfcheetah-random-v2_popcql.tsv};
+        \addplot [name path=poptdL,color=poptd!20] table [x=step,y expr=(\thisrow{ci_lower}-\thisrow{average_return})/2.828 + \thisrow{average_return},forget plot] {poptd/d4rl/returns_halfcheetah-random-v2_popcql.tsv};
+        \addplot[color=poptd!20,forget plot] fill between[of=poptdU and poptdL];
 
-        \addplot [name path=naivetdU,color=naivetd!20] table [x=step,y=ci_upper] {poptd/d4rl/returns_halfcheetah-random-v2_nopop.tsv};
-        \addplot [name path=naivetdL,color=naivetd!20] table [x=step,y=ci_lower] {poptd/d4rl/returns_halfcheetah-random-v2_nopop.tsv};
-        \addplot[pattern color=naivetd!20,pattern=north east lines,] fill between[of=naivetdU and naivetdL];
+        \addplot [name path=naivetdU,color=naivetd!20,forget plot] table [x=step,y expr=(\thisrow{ci_upper}-\thisrow{average_return})/2.828 + \thisrow{average_return}] {poptd/d4rl/returns_halfcheetah-random-v2_cql.tsv};
+        \addplot [name path=naivetdL,color=naivetd!20,forget plot] table [x=step,y expr=(\thisrow{ci_lower}-\thisrow{average_return})/2.828 + \thisrow{average_return}] {poptd/d4rl/returns_halfcheetah-random-v2_cql.tsv};
+        \addplot[color=naivetd!20,forget plot] fill between[of=naivetdU and naivetdL];
 
-        \addplot [color=poptd] table [x=step,y=average_return] {poptd/d4rl/returns_halfcheetah-random-v2_pop.tsv};
-        \addplot [color=naivetd] table [x=step,y=average_return] {poptd/d4rl/returns_halfcheetah-random-v2_nopop.tsv};
+        \addplot [name path=dualdiceU,color=dualdice!20,forget plot] table [x=step,y expr=(\thisrow{ci_upper}-\thisrow{average_return})/2.828 + \thisrow{average_return}] {poptd/d4rl/returns_halfcheetah-random-v2_dualdicecql.tsv};
+        \addplot [name path=dualdiceL,color=dualdice!20,forget plot] table [x=step,y expr=(\thisrow{ci_lower}-\thisrow{average_return})/2.828 + \thisrow{average_return}] {poptd/d4rl/returns_halfcheetah-random-v2_dualdicecql.tsv};
+        \addplot[color=dualdice!20,forget plot] fill between[of=dualdiceU and dualdiceL];
 
 
-        \node at (axis cs:1600,0.32) [anchor=south east] {{\color{poptd} POP-Q}};
-        \node at (axis cs:1600,0.27) [anchor=north east] {{\color{naivetd} Naive Q}};
+        \addplot [color=black!30!dualdice, forget plot] table [x=step,y=average_return] {poptd/d4rl/returns_halfcheetah-random-v2_dualdicecql.tsv};
+        \addlegendimage{dualdice,line width=3pt}
+        % \addlegendimage{dualdice}
+        \addlegendentry{DualDICE + CQL};
+        \addplot [color=black!30!poptd,forget plot] table [x=step,y=average_return] {poptd/d4rl/returns_halfcheetah-random-v2_popcql.tsv};
+        \addlegendimage{poptd,line width=3pt}
+
+        \addlegendentry{POP-CQL};
+        \addplot [color=black!30!naivetd,forget plot] table [x=step,y=average_return] {poptd/d4rl/returns_halfcheetah-random-v2_cql.tsv};
+        \addlegendimage{naivetd,line width=3pt}
+        \addlegendentry{CQL};
 
     \end{axis}
 \end{tikzpicture}
