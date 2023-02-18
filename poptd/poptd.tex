@@ -176,47 +176,52 @@ Plugging this back into our dual formulation, we obtain the optimization problem
 As discussed earlier, $F(s)$ cannot be directly constructed; instead, we assume that $Z$ holds a specific structure and optimize the problem.
 
 
-\subsection{Simplifying the optimization problem}
+\subsection{The structure of Z}
 
 Our next goal is to transform this constrained optimization problem into an unconstrained problem over a low-rank version of $Z$, suitable for learning via SGD.
 
-We assume (and later check!) that the solution for $Z$ is low-rank. Intuitively, this is because $\E_{s\sim\mu}[F(s)]$ is PSD when $\mu$ is close to $\pi$, and for most MDPs, sampling off-policy leads to only a small number of negative eigenvalues that need to be corrected by $Z$. \citet{kolter2011fixed} provides a technical explanation: by the KKT conditions, $Z$ will have rank complementary to $\E_{s\sim\mu}[F(s)]$, and the latter is expected to be full rank. It is worth noting that this ``almost-PSD'' assumption is common in the field. We later discuss how we verify that this assumption holds.
+We assume (and later check!) that the solution for $Z$ is low-rank. Intuitively, this is because $\E_{s\sim\mu}[F(s)]$ is PSD when $\mu$ is close to $\pi$, and for most MDPs, sampling off-policy leads to only a small number of negative eigenvalues that need to be corrected by $Z$. \citet{kolter2011fixed} provides a technical explanation: by the KKT conditions, $Z$ will have rank complementary to $\E_{s\sim\mu}[F(s)]$, and the latter is expected to be full rank. It is worth noting that this ``almost-PSD'' assumption is common in the field.
 
-We make the strong assumption that $Z$ is rank one, and apply the Burer-Montiero approach \citep{burer2003nonlinear} to convert the constrained optimization problem over $Z$ into an unconstrained optimization over $y\in \mathbb R^{k}$:
+We make the strong assumption that $Z$ has rank $m$, where $m << k$. We apply the Burer-Montiero approach \citep{burer2003nonlinear} to convert the constrained optimization problem over $Z$ into an unconstrained optimization over matrices $A\in \mathbb R^{k\times m}$ and $B\in \mathbb R^{k\times m}$:
 \begin{align}
-  Z^\star & = \begin{bmatrix} y \\ -y \end{bmatrix} \begin{bmatrix} y \\ -y\end{bmatrix}^T
+  Z^\star & = \begin{bmatrix} A \\ B \end{bmatrix} \begin{bmatrix} A \\ B\end{bmatrix}^T
 \end{align}
-Substituting this into the dual formulation, we get:
+This allows us to represent the PSD matrix with controllable rank. Substituting this into the dual formulation, we get:
 \begin{align}
-  \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left (\tr  \begin{bmatrix} y \\ -y \end{bmatrix} \begin{bmatrix} y \\ -y\end{bmatrix}^T F(s) \right )  \right ]
+  \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left (\tr  \begin{bmatrix} A \\ B \end{bmatrix} \begin{bmatrix} A \\ B \end{bmatrix}^T F(s) \right )  \right ]
 \end{align}
 
 We can leverage the structure of $F(s)$ to simplify the trace term:
 \begin{align}
-   & \tr  \begin{bmatrix} y \\ -y \end{bmatrix} \begin{bmatrix} y \\ -y \end{bmatrix}^T F(s)
-  \\ & = \begin{bmatrix} y \\ -y \end{bmatrix}^T F(s) \begin{bmatrix} y \\ -y \end{bmatrix}
-  \\ & =  \begin{bmatrix} y \\ -y \end{bmatrix}^T  \mathbf{E}_{s' \sim p(s'|s)}  \left[ \begin{array}{cc} \phi(s)\phi(s)^T & \phi(s)\phi(s')^T \\ \phi(s')\phi(s)^T & \phi(s)\phi(s)^T \end{array} \right]
-  \begin{bmatrix} y \\ -y \end{bmatrix}
-  \\  & =  2 y^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] y
-  \\  & =  2 y^T A(s) y
-\intertext{where}
-A(s) & = \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] \label{eqn:amatrix}
+  \tr Z^T F(s)
+   & \tr  \begin{bmatrix} A \\ B \end{bmatrix}^T \begin{bmatrix} A \\ B \end{bmatrix}^T F(s)
+  \\ & = \begin{bmatrix} A \\ B \end{bmatrix}^T F(s) \begin{bmatrix} A \\ B \end{bmatrix}
+  \\ & = \begin{bmatrix} A \\ B \end{bmatrix}^T  \mathbf{E}_{s' \sim p(s'|s)}  \left[ \begin{array}{cc} \phi(s)\phi(s)^T & \phi(s)\phi(s')^T \\ \phi(s')\phi(s)^T & \phi(s)\phi(s)^T \end{array} \right]
+  \begin{bmatrix} A \\ B \end{bmatrix}
+  \\  & =  (A + B)^T \phi(s)\phi(s)^T (A+B)
+  - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
 \end{align}
 
 
 This allows us to rewrite the optimization problem as:
 \begin{align}
-  \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left(2 y^\top A(s) y \right)  \right ]
+  \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left((A + B)^T \phi(s)\phi(s)^T (A+B)
+    - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
+    \right)  \right ]
 \end{align}
-
-This has some great properties: in particular, we can optimize $y$ in an unconstrained manner (i.e. with SGD), and we need only use quantities that we already compute ($\phi(s), \phi(s')$). All this leads to the final step, the derivation of the update rules:
+where the small parameters $A$ and $B$ can be optimized with regular gradient-descent methods.
 
 
 \subsection{Update rules}
 
-We can't directly optimize $y$ because that would require us to create $A(s)$. Instead, we use a two-timescales approach by estimating two (dependent) quantities separately and improving them at potentially different rates. By optimizing over the two quantities simultaneously, we hope to be able to discover the convergent value. This is generally possible with a little tuning.
+We can't directly optimize our problem because that would require us to estimate the inner expectation term. Instead, we use a two-timescales approach by estimating two (dependent) quantities separately and improving them at potentially different rates. This (with a little tuning) can generally converge to a valid solution.
 
-We choose to optimize $y \in \mathbb R^k$ which is the same size as $w$, and the trace estimate $g(s) = y^\top A(s) y \in \mathbb R^n$. Instead of learning a tabular $g(s)$, we can approximate it as a linear function (or a neural network, for larger problems). This decision means the size of the per-update weights are still $\mathcal O(k)$ (limited by $w$ and $y$).
+We choose to estimate the matrices $A, B \in \mathbb R^{k\times m}$ and separately the function $g : \mathcal S \in \mathbb R$ where
+\begin{align}
+  g(s) & \approx (A + B)^T \phi(s)\phi(s)^T (A+B)
+  - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
+\end{align}
+which can be approximated as a linear function (or a neural network). The size of the weights learned by POP-TD are therefore $\mathcal O(k)$, comparable to the size of vanilla Q-learning.
 
 We find the derivative of the objective with respect to $g(s)$ and $y$ and use that to construct update rules for our algorithm.
 \begin{align}
@@ -361,7 +366,7 @@ We conjecture that this happens because POP-TD seeks to stochastically learn $\P
 
 %\\ TODO: Check for $\Phi_g$  
 
-The divergence appears to happen when the bases are selected so that this 
+The divergence appears to happen when the bases are selected so that this
 
 
 \section{Ongoing Work}

@@ -1,7 +1,7 @@
 {
     "latex-workshop.latex.outDir": "./out",
     "latex-workshop.synctex.afterBuild.enabled": true,
-    "latex-workshop.view.pdf.viewer": "tab",
+    "latex-workshop.view.pdf.viewer": "browser",
     "latex-workshop.view.pdf.hand": true,
     "latex-workshop.latex.clean.command": "latexmk -C",
     "latex-workshop.latex.recipe.default": "latexmk 🔃",

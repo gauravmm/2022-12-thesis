@@ -85,7 +85,7 @@
 % }
 \fancyhead[EL]{\ifnum\value{chapter}=0\else\leftmark\fi}
 \fancyhead[ER]{}
-\fancyhead[OL]{}\endhead % all the lines above this will be repeated on every page
+\fancyhead[OL]{}
 \fancyhead[OR]{\rightmark}
 
 \setlength{\headheight}{13.6pt}
@@ -157,7 +157,7 @@ In this thesis we examine two notions of stability: the predictions of neural ne
 This relationship between stabilities has significant precedence in the foundational work of Temporal Difference (TD) learning theory \cite{tsitsiklis1996analysis}. The goal for the work in this thesis was to relate these two stabilities, designing new RL algorithms with favorable stability properties.
 Unfortunately, this was not quite to be.
 
-In the first chapter we propose a new method for learning Lyapunov-stable dynamical models and the certifying Lyapunov function in a fully end-to-end manner. 
+In the first chapter we propose a new method for learning Lyapunov-stable dynamical models and the certifying Lyapunov function in a fully end-to-end manner.
 This works by carefully constructing a neural network to act as a Lyapunov function and learning a separate, unconstrained model. These two models are combined with a novel reprojection layer to produce models that are guaranteed stable by construction, even without any training. We show that such learning systems are able to model simple dynamical systems such as pendulums, and can be combined with additional deep generative models to learn complex dynamics, such as video textures, in a fully end-to-end fashion, given Temporal Difference (TD) data.
 
 Next, we attempted to extend this work to learn control policies that produce stable trajectories. This is a natural extension of the previous work, equivalent to only minor changes to the construction of the dynamics model. Our work necessarily learned from TD data collected by a different policy (i.e. offline). Despite immense effort and many experiments, this technique never converged to reasonable solutions, even with regularization. This led to the insights in the second chapter.
