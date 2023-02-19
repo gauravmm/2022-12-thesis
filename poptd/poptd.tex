@@ -95,19 +95,19 @@ Thus far we have left open the notion of a ``safe'' distribution to resample TD 
 
 To do this, they begin with the fact that error bounds from on-policy TD follow the property that the $D-$norm of any vector $x \in \mathbb R^n$ is non-expansive through the transition matrix. That is: $\|Px\|_D \leq \|x\|_D$, where $D = \diag(\pi)$. \citet{kolter2011fixed} extend this analysis to the off-policy case, deriving a linear matrix inequality (LMI) under which the TD updates are guaranteed to be non-expansive around the fixed point. This is Kolter's Non-Expansion Criterion (\citeyear{kolter2011fixed}):
 \begin{align}
-  \|\Phi w - V\|_D    & \leq \frac{1 + \gamma \kappa(D^{-\sfrac{1}{2}}D^{\sfrac{1}{2}})}{1 - \gamma} \|\Pi_D V - V\|_D
+  \|\Phi w - V\|_D                  & \leq \frac{1 + \gamma \kappa(D^{-\sfrac{1}{2}}D^{\sfrac{1}{2}})}{1 - \gamma} \|\Pi_D V - V\|_D
   \intertext{From this bound, he derives \emph{Kolter's non-expansion condition}:}
-  \|\Pi_D P\Phi w\|_D & \leq \|\Phi w\|_D \qquad (\forall w \in \mathbb R^n) \label{eqn:kolterthm2bound}
+  \|\Pi_D P\Phi w\|_D               & \leq \|\Phi w\|_D \qquad (\forall w \in \mathbb R^n) \label{eqn:kolterthm2bound}
   \intertext{This holds if and only if the matrix $F_D$ is positive semi-definite}
-  F_D                 & \equiv \begin{bmatrix}
-                                 \Phi^\top D \Phi        & \Phi^\top D P \Phi \\
-                                 \Phi^\top P^\top D \Phi & \Phi^\top D \Phi
-                               \end{bmatrix} \succcurlyeq 0
+  F_D                               & \equiv \begin{bmatrix}
+                                               \Phi^\top D \Phi        & \Phi^\top D P \Phi \\
+                                               \Phi^\top P^\top D \Phi & \Phi^\top D \Phi
+                                             \end{bmatrix} \succcurlyeq 0
   \intertext{Equivalently, in terms of the expectation over states:}
-  \\  \E_{s\sim \mu, s'\sim p(\cdot|s)} & \left[\begin{bmatrix}
-      \phi(s)\phi(s)^\top  & \phi(s)\phi(s')^\top \\
-      \phi(s')\phi(s)^\top & \phi(s)\phi(s)^\top
-    \end{bmatrix}\right] \succcurlyeq 0 . \label{eqn:knec}
+  \E_{s\sim \mu, s'\sim p(\cdot|s)} & \left[\begin{bmatrix}
+                                                \phi(s)\phi(s)^\top  & \phi(s)\phi(s')^\top \\
+                                                \phi(s')\phi(s)^\top & \phi(s)\phi(s)^\top
+                                              \end{bmatrix}\right] \succcurlyeq 0 . \label{eqn:knec}
 \end{align}
 This constraint describes a convex subset of $D$. As a $2k\times 2k$ matrix (where $k$ is the number of features), $F$ is prohibitively large to enumerate for any real RL problem, and so our algorithm is designed to make use of this without ever constructing it directly. Further, we notice that the construction of $F_D$ depends on $P$, the transition matrix of the underlying Markov process, which complicates how we construct it from samples.
 
@@ -117,7 +117,7 @@ For convenience, we write this as:
    & F(s) = \E_{s'\sim p(s'|s)}  \left[\begin{bmatrix}
                                            \phi(s)\phi(s)^\top  & \phi(s)\phi(s')^\top \\
                                            \phi(s')\phi(s)^\top & \phi(s)\phi(s)^\top
-                                         \end{bmatrix}\right] .
+                                         \end{bmatrix}\right] . \label{eqn:fmatrix}
 \end{align}
 KNEC is an expectation over some state distribution $q$ and transition distribution $p(s,s') = p(s'|s) \mu(s)$. Because it is an LMI, the satisfying state distributions $q$ form a convex subset.
 
@@ -216,34 +216,31 @@ where the small parameters $A$ and $B$ can be optimized with regular gradient-de
 
 We can't directly optimize our problem because that would require us to estimate the inner expectation term. Instead, we use a two-timescales approach by estimating two (dependent) quantities separately and improving them at potentially different rates. This (with a little tuning) can generally converge to a valid solution.
 
-We choose to estimate the matrices $A, B \in \mathbb R^{k\times m}$ and separately the function $g : \mathcal S \in \mathbb R$ where
+We choose to estimate the matrices $A, B \in \mathbb R^{k\times m}$ and separately the function $g_\theta : \mathcal S \in \mathbb R$ where
 \begin{align}
-  g(s) & \approx (A + B)^T \phi(s)\phi(s)^T (A+B)
+  g_\theta(s) & \approx (A + B)^T \phi(s)\phi(s)^T (A+B)
   - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
 \end{align}
-which can be approximated as a linear function (or a neural network). The size of the weights learned by POP-TD are therefore $\mathcal O(k)$, comparable to the size of vanilla Q-learning.
+which can be approximated as a linear function (or a neural network) with parameters $\theta$. The size of the weights learned by POP-TD are therefore $\mathcal O(k)$, comparable to the size of vanilla Q-learning.
 
-We find the derivative of the objective with respect to $g(s)$ and $y$ and use that to construct update rules for our algorithm.
+This corresponds to the auxiliary loss term for $A, B$:
 \begin{align}
-   & \nabla_y \mathbf{E}_\mu \left [ \exp (2 y^T A(s) y) \right ]
-  \\ & =
-  \mathbf{E}_{s \sim \mu(s)} \left [ \exp (2 y^T A(s) y) \; A(s) y \right ]
-  \\  & = \mathbf{E}_{s \sim \mu(s), s' \sim p(s'|s)} \left [ \exp (2 y^T A(s) y) \; \phi(s)(\phi(s) - \phi(s))^T y \right ]
-  \intertext{We substitute $g(s)$ into this to arrive at the final gradient derivation}
-   & = \mathbf{E}_{s \sim \mu(s), s' \sim p(s'|s)} \left [ \exp(2 g(s)) \; \phi(s)(\phi(s) - \phi(s'))^T y \right ].
+  \mathcal L_{A,B}(s, s')
+   & = g_\theta(s) \left [
+    (A + B)^T \phi(s)\phi(s)^T (A+B)
+    - 2A^T \phi(s)(\phi(s)- \phi(s'))^T B
+    \right ]
+  \intertext{and for $g$:}
+  \mathcal L_{g}(s, s')
+   & = \left( g_\theta(s) -
+  \left [
+      (A + B)^T \phi(s)\phi(s)^T (A+B)
+      - 2A^T \phi(s)(\phi(s)- \phi(s'))^T B
+      \right ]
+  \right)^2
 \end{align}
 
-This corresponds to the update rules:
-\begin{align}
-  a      & \gets \phi(s)^\top y                                                    \\
-  b      & \gets \phi(s')^\top y                                                   \\
-  \theta & \gets \theta - \alpha_1 (g_\theta(s) - a(a-b))\nabla_\theta g_\theta(s) \\
-  y      & \gets y - \alpha_2 \exp(2 g_\theta(s)) (a-b) \phi(s)
-\end{align}
-where $\theta$ is the parameterization of $g(s)$, and $\alpha_\circ$ are learning rates.
-
-And finally, to complete this, we multiply each update of $w$ by $\exp(2 g(s))$ to resample it so it appears to come from the ``safe'' distribution, which completes the description of the algorithm!
-
+And finally, to complete this, we multiply each update of $w$ by $\exp(g(s))$ to resample it so it appears to come from the ``safe'' distribution, which completes the description of the algorithm!
 
 
 \subsection{POP-Q-Learning}\label{sec:popq}\label{sec:pop-q-derivation}
@@ -267,7 +264,7 @@ See \cref{sec:pop-q-derivation} for a detailed derivation.
 
 Finally, for our method to applied to modern deep RL problems, we must extend our approach to non-linear Q-functions.
 To do so, we approximate the Q-function with a neural network, $Q_{\theta^Q}$ parameterized by $\theta^Q$ and consider a stochastic parameterized policy $\pi_{\theta^\pi}$.
-To update $Q_{\theta^Q}$, we used a squared Bellman loss, $\mathcal{L}_Q(\theta^Q) = (Q_{\theta^Q}(s, a) - r - \gamma Q_{\theta^Q}(s', \pi_{\theta^\pi}(s')))^2$, which we re-weight with our g-function as before.
+To update $Q_{\theta^Q}$, we used a squared Bellman loss, $\mathcal{L}_Q(\theta^Q) = (Q_{\theta^Q}(s, a) - r - \gamma Q_{\theta^Q}(s', \pi_{\theta^\pi}(s')))^2$, which we re-weight with $e^g(s)$ as before.
 For our offline RL experiments, we also add CQL regularization \citep{kumar2020cql} to our Q-learning updates to prevent over-optimism on low-support regions of the state-action space.
 To update our linear dual variables $y$, we use the penultimate layer of $Q_{\theta^Q}$ as our feature vector.
 Finally, we use a SAC-style entropy regularized loss to update our policy network, $\pi_{\theta^\pi}$.
@@ -285,12 +282,13 @@ Finally, we use a SAC-style entropy regularized loss to update our policy networ
     \STATE \# Compute features from penultimate layer of Q-network:
     \STATE $\phi \gets Q_{\theta^Q}(s, a), \phi' \gets Q_{\theta^Q}(s', \tilde{a}')$.
     \STATE \# Update g-function and dual variable vectors:
-    \STATE $\theta^g_t \gets \theta^g_{t+1} - \eta_g \nabla_{\theta^g} [g_{\theta^g}(s, a) - (\phi^\top y) (\phi - \phi')^\top y]^2$
-    \STATE $y_t \gets y_{t+1} - \eta_y \exp (2 g_{\theta^g}(s, a)) [(\phi - \phi)^\top y \cdot \phi]$
+    \STATE $\theta^g_t \gets \theta^g_{t-1} - \eta_g \nabla_{\theta^g} \mathcal{L}_g(s, s')$
+    \STATE $A_t \gets A_{t-1} - \eta_A \nabla_{A} \mathcal{L}_{A}(s, s')$
+    \STATE $B_t \gets B_{t-1} - \eta_B \nabla_{B} \mathcal{L}_{B}(s, s')$
     \STATE \# Update Q-function using re-weighted Q-loss update:
-    \STATE $\theta^Q_t \gets \theta^Q_{t+1} - \eta_Q \exp (2 g_{\theta^g}(s, a)) \nabla_{\theta^Q} \mathcal{L}_Q(\theta^Q)$
+    \STATE $\theta^Q_t \gets \theta^Q_{t-1} - \eta_Q \exp (g_{\theta^g}(s, a)) \nabla_{\theta^Q} \mathcal{L}_Q(\theta^Q)$
     \STATE \# Update policy with SAC-style loss:
-    \STATE $\theta^\pi_t \gets \theta^\pi_{t+1} - \eta_\pi \nabla_{\theta_\pi} [Q_{\theta^Q}(s, \tilde{a}) - \log \pi_{\theta^\pi}(\tilde{a} | s)]$
+    \STATE $\theta^\pi_t \gets \theta^\pi_{t-1} - \eta_\pi \nabla_{\theta_\pi} [Q_{\theta^Q}(s, \tilde{a}) - \log \pi_{\theta^\pi}(\tilde{a} | s)]$
     \ENDFOR
   \end{algorithmic}
 \end{algorithm}
@@ -318,38 +316,76 @@ This simple experiment cleanly illustrates how POP-TD resamples TD updates to co
 \end{figure}
 
 
-
-\subsection{Tabular POP-Q on GridWorld}
+\subsection{POP-Q on GridWorld}
 
 \label{sec:expsimpleoffpolicy}
 \begin{figure}[t]
   \centering
-  \input{poptd/simpleoffpolicy/errors_plot.tex}
-  \caption{Q-function errors for naive and POP Q-Learning on \cref{fig:sopmap}, over 50 randomly sampled bases. Points below the line correspond to bases where POP-Q has lower error. POP-Q substantially reduces error at convergence in about half the sampled bases. }
+  \input{poptd/simpleoffpolicy/random_initalizations_histogram.pgf}
+  \caption{Log Q-function errors for naive and POP Q-Learning on \cref{fig:sopmap}, over 25 randomly sampled bases. Errors are computed using a tabular $g$ function, and bins are exponentially wide. POP-Q substantially reduces error in most of the sampled bases. }
   \label{fig:soperr}
 \end{figure}
 
-In this experiment, we consider the the simple grid environment from \cref{fig:sopmap}.
-Our training data is sampled following the suboptimal data policy ({\color{datapolicy} \datapolicyglyph}), adding uniform random dithering to guarantee that every state-action pair is represented.
-Our goal is to approximate the true Q-function, eventually recovering the optimal policy ({\color{optimpolicy} \optimpolicyglyph}).
-We represent the Q-function as a linear function with a fixed random basis, training it to convergence using naive Q-learning and POP-Q separately. (For POP-Q, we also randomly initialize a tabular $y$ and $g$ separately.) We also compute the ground-truth Q-function using tabular Q-learning, which must converge to the global optimum \cite{watkins1992q}.
+In this experiment, we consider the the simple grid environment from \cref{fig:sopmap}. Our goal is to approximate the true Q-function with minimal error. Our training data is sampled following the suboptimal data policy ({\color{datapolicy} \datapolicyglyph}), adding uniform random dithering to guarantee that every state-action pair is represented.
+We represent the Q-function as a linear function with a fixed random basis $\Phi \in \mathbb R^{64\times 53}$, training it to convergence using naive Q-learning and linear POP-Q separately. For POP-Q, we also randomly initialize matrices $A, B \in \mathbb R^{53\times 4}$ and a tabular $g \in \mathbb R^{64}$ separately. (We will later consider an approximate $g$.)
 
-We plot the error at convergence over 50 different random initializations in \cref{fig:soperr}, where the horizontal position of the point indicates the error when Naive TD is used, and the vertical position indicated the error with POP-TD. About half of the points are below the diagonal line, indicating that POP-Q has lower error in those cases. For comparison, we annotate the mean error if similarly-initialized Q-functions were trained following the optimal policy (\emph{On-Policy}), which represents the best-case error in expectation.
+\paragraph{Setting the rank of $A, B$:}
+We could simply set the rank of $A$ and $B$ as any other hyperparameter, but since this problem is sufficiently small we can instead compute the minimum rank directly. To do this, we compute the degree of rank deficiency of the matrix $\E_s [F(s)]$ from \cref*{eqn:fmatrix} on our dataset, and set the rank of $A$ and $B$ so the sum of the rank of $\E_s [F(s)]$ and $A$ and $B$ is at least $k$. For this example, for $k=53$, we find that $\text{rank} (A) = \text{rank} (B) = 4$ is sufficient for this example.
 
-The distribution of errors in naive Q-learning spans many orders of magnitude. This is expected because we have deliberately engineered the task to be unstable. The stability of TD in each case depends on the basis, which is randomly sampled. By comparing the performance between POP-TD and naive TD on the with the same basis, we can show that POP-TD is able to mitigate instability on bases where naive TD is unstable.
+\subsubsection[Results with a tabular g]{Results with an exact, tabular $g$}
 
-POP-Q attempts to resample updates to find a distribution where KNEC holds. We can indirectly observe this tendency by finding the most negative eigenvalue of the A-matrix (from \cref{eqn:amatrix}), and comparing it before and after reweighing. In 90\% of the cases, the smallest eigenvalue increases after reweighing, suggesting that POP-Q is successfully resampling the data to a distribution closer to one where KNEC holds.
+Since tabular Q-learning always converges to the global optimum \cite{watkins1992q}, we use that to compute the ground-truth Q-function. All error reported is relative to that assumed ground truth.
+
+Figure~\ref{fig:soperr} shows the distribution of errors achieved by vanilla and POP Q-learning over 25 different bases on our task. Vanilla Q-learning performs consistently poorly, achieving a (large) amount of error at all seeds. This is expected because we have deliberately engineered the task to be unstable. In comparison, POP-TD improves performance over most seeds, and in some cases enables near-perfect fitting of the Q-function.
+
+Throughout this chapter we have drawn a distinction between importance sampling/Emphatic TD methods and our work. While the former attempts to resample to the on-policy distribution, our work seeks to resample to the closest stable distribution. We illustrate this difference in Figure~\ref{fig:popresampling}, where we display the rates at which states are visited in our GridWorld. The distribution in our dataset (top-right) is far from the on-policy distribution (top-left), which is what importance sampling and Emphatic methods will attempt to resample to. In comparison, POP-Q resamples minimally (bottom row), where the effective distribution reached is very close to the data distribution.
 
 
-\subsection{Linear POP-Q on GridWorld}
+\begin{figure}[t]
+  \centering
+  \import{poptd/simpleoffpolicy/}{visit_frequency.pgf}
+  \caption{Rates at which states are visited in GridWorld. On the top row, we show how the optimal policy (left) is very far from the data policy (right). On the bottom row, we show the effective distribution after POP-Q resamples the data. The effective distribution is very close to the data distribution, despite the tremendous improvement in error. }
+  \label{fig:popresampling}
+\end{figure}
+
+
+\subsubsection[Results with a linear g]{Results with an approximate, linear $g$}
+
+A key step in adopting POP-Q is ensuring that all parameters are at most order $\mathcal O(k)$ (i.e. comparable to the size of the learned weights) and are therefore learnable with the same time and space as regular TD. The matrices $A$ and $B$ are sized $k\times m$, where $m << k$, and so are sufficiently small. We now need to approximate $g$ as a linear function with fixed bases vectors $\Phi_g = (\phi_{g,1}, \phi_{g,2}, ..., \phi_{g,n})$ and learned weights $w_g \in \mathbb R^{l}$ of size $l < n$:
+\begin{align}
+  g(s) = \phi_{g, s} \cdot w_g
+\end{align}
+To understand the relationship between the degree of approximation (as measured by the size of the basis $l$) and the performance of our system, we initialize 25 different $n\times n$ bases and report the performance as the bases are truncated down from 64 to 1. This is illustrated in Figure~\ref{fig:linearerr}.
+
+From this we can see that there
+
+- Sensetive to the  basis for the value function, not just the basis of $g$.
+- Pathological value-bases for which this never works.
+- Lottery-ticket bases which work until l = 1. (ie. The system is fairly easy to resample, and the amount of resampling isnt much, and so some bases work just fine.)
+
+
 
 \label{sec:explinearoffpolicy}
 \begin{figure}[t]
   \centering
-  \input{poptd/simpleoffpolicy/errors_plot.tex}
-  \caption{Q-function errors for naive and POP Q-Learning on \cref{fig:sopmap}, over 50 randomly sampled bases. Points below the line correspond to bases where POP-Q has lower error. POP-Q substantially reduces error at convergence in about half the sampled bases. }
+  \import{poptd/simpleoffpolicy/}{linear_interpolation.pgf}
+  \caption{Error for POP-Q with linear $g$ functions. Each row corresponds to one basis that is sucessively truncated from 64 elements to 1, and each column corresponds to a basis size $l$ as it is reduced from 64 to 1. The hatched cells correspond to combinations of seeds and bases in which POP-Q performs worse than vanilla Q-learning. For a reasonable $g$-basis, comparable to the value function basis, POP-Q greatly improves performance over vanilla TD. }
   \label{fig:linearerr}
 \end{figure}
+
+
+We understand
+
+%#TODO: Mention that environment is resetting.
+
+
+
+\subsection{Linear POP-Q on GridWorld}
+
+The current experiments with POP-Q learning all use a tabular g. This works, but takes the same memory as would learning a tabular value function, which would provably converge to the global optimum (side-stepping the entire problem).
+
+Currently, we are evaluating POP-Q with approximate $g$ on our GridWorld example. We are running an ablation study to understand the relationship between the degree of approximation of $g$ and the performance of the resultant system.
+
 
 This is a similar experiment to that in \cref{sec:expsimpleoffpolicy}, but with linear approximation. One key step on the road to getting POP-Q to work on larger experiments is to understand the behavior of POP-Q under function approximation. Function approximation is necessary because, in the tabular case, POP-Q uses as much memory as a tabular Q-learning algorithm would; this is intractable for most practical problems. We also wish to exploit the generalization afforded to us by neural networks, to hopefully learn more accurate models with less data.
 
@@ -366,18 +402,10 @@ We conjecture that this happens because POP-TD seeks to stochastically learn $\P
 
 %\\ TODO: Check for $\Phi_g$  
 
-The divergence appears to happen when the bases are selected so that this
-
 
 \section{Ongoing Work}
 
 While preliminary results are promising, we need to adapt this to standard RL tasks to showcase its effectiveness.
-
-\subsection{POP-Q with linear G on GridWorld}
-
-The current experiments with POP-Q learning all use a tabular g. This works, but takes the same memory as would learning a tabular value function, which would provably converge to the global optimum (side-stepping the entire problem).
-
-Currently, we are evaluating POP-Q with approximate $g$ on our GridWorld example. We are running an ablation study to understand the relationship between the degree of approximation of $g$ and the performance of the resultant system.
 
 \subsection{D4RL Random Datasets}
 
