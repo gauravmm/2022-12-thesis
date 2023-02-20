@@ -326,7 +326,7 @@ This simple experiment cleanly illustrates how POP-TD resamples TD updates to co
   \label{fig:soperr}
 \end{figure}
 
-In this experiment, we consider the the simple grid environment from \cref{fig:sopmap}. Our goal is to approximate the true Q-function with minimal error. Our training data is sampled following the suboptimal data policy ({\color{datapolicy} \datapolicyglyph}), adding uniform random dithering to guarantee that every state-action pair is represented.
+In this experiment, we consider the the simple grid environment from \cref{fig:sopmap}, modified to add transitions from terminating states to the starting state. Our goal is to approximate the true Q-function with minimal error. Our training data is sampled following the suboptimal data policy ({\color{datapolicy} \datapolicyglyph}), adding uniform random dithering to guarantee that every state-action pair is represented.
 We represent the Q-function as a linear function with a fixed random basis $\Phi \in \mathbb R^{64\times 53}$, training it to convergence using naive Q-learning and linear POP-Q separately. For POP-Q, we also randomly initialize matrices $A, B \in \mathbb R^{53\times 4}$ and a tabular $g \in \mathbb R^{64}$ separately. (We will later consider an approximate $g$.)
 
 \paragraph{Setting the rank of $A, B$:}
@@ -357,12 +357,7 @@ A key step in adopting POP-Q is ensuring that all parameters are at most order $
 \end{align}
 To understand the relationship between the degree of approximation (as measured by the size of the basis $l$) and the performance of our system, we initialize 25 different $n\times n$ bases and report the performance as the bases are truncated down from 64 to 1. This is illustrated in Figure~\ref{fig:linearerr}.
 
-From this we can see that there
-
-- Sensetive to the  basis for the value function, not just the basis of $g$.
-- Pathological value-bases for which this never works.
-- Lottery-ticket bases which work until l = 1. (ie. The system is fairly easy to resample, and the amount of resampling isnt much, and so some bases work just fine.)
-
+Figure~\ref{fig:linearerr} reveals that the performance of POP-Q is (as expected) sensitive to the exact basis chosen. For some bases, the error increases with only a small amount of approximation, but for some ``lottery-ticket'' bases, this continues to work even as the bases are truncated to rank 1. For some bases, this continues to work despite  extreme approximation is because the degree of resampling required is minimal and the system is fairly easy to resample.
 
 
 \label{sec:explinearoffpolicy}
@@ -372,12 +367,6 @@ From this we can see that there
   \caption{Error for POP-Q with linear $g$ functions. Each row corresponds to one basis that is sucessively truncated from 64 elements to 1, and each column corresponds to a basis size $l$ as it is reduced from 64 to 1. The hatched cells correspond to combinations of seeds and bases in which POP-Q performs worse than vanilla Q-learning. For a reasonable $g$-basis, comparable to the value function basis, POP-Q greatly improves performance over vanilla TD. }
   \label{fig:linearerr}
 \end{figure}
-
-
-We understand
-
-%#TODO: Mention that environment is resetting.
-
 
 
 \subsection{Linear POP-Q on GridWorld}
@@ -400,10 +389,7 @@ We conduct a series of experiments to understand the relationship between the de
 When performing experiments, we note that the performance of POP-TD depends sharply on the condition number of $\Phi$, but not necessarily that of $\Phi_g$. Specifically, we see that an orthogonal initialization step on $\Phi$ is crucial for performance. (In this step we set $\Phi$ to the orthogonal matrix of the QR-decomposition of a matrix where entries are sampled uniformly at random.)
 We conjecture that this happens because POP-TD seeks to stochastically learn $\Phi^T A \Phi$, and a poor condition number of $\Phi$ leads to values that span multiple orders of magnitude and linear approximation is known to perform poorly on such data.
 
-%\\ TODO: Check for $\Phi_g$  
-
-
-\section{Ongoing Work}
+\begin{comment}
 
 While preliminary results are promising, we need to adapt this to standard RL tasks to showcase its effectiveness.
 
@@ -447,7 +433,14 @@ We train both CQL and POP-CQL on the resultant dataset and plot the performance 
   \label{fig:fwdback}
 \end{figure}
 
-\section{Conclusion}
-In this chapter, we introduced a method for decreasing the approximation error off-policy for both state value functions, POP-TD, and state-action value functions, POP-Q. Under mild assumptions, our method guarantees that the off-policy approximation error for both state and state-action value functions is bounded. This is bourne out by toy and small-scale experiments, in which our method significantly decreases the approximation error for certain sampling functions.
+\end{comment}
 
-Currently, we are considering the relationship between the degree of approximation of $g$ and the resultant performance of the method. Also, to establish the practicality of the method, can integrate our method with Conservative Q-Learning and test the resultant POP-CQL algorithm on a set of standard D4RL locomotion tasks. We are currently working on evaluating the performance of this combination method and understanding how to improve its performance.
+
+\section{Conclusion}
+In this chapter we introduced POP-TD, a method for effective TD learning under off-policy distributions, with applications to offline RL and learning under large distribution shifts. Unlike existing emphatic TD and importance sampling methods which resample to the on-policy distribution, POP-TD resamples to the closest distribution under which TD will provably not diverge.
+
+We present POP-TD on an existing ``deadly triad'' example in the literature, showing how the resampling process operates in theory. We extend this to a more general GridWorld-style Q-learning task which diverges under vanilla TD, but is consistently solved by POP-Q-learning.
+
+A key strength of POP-Q-learning is that is achieves all this with a per-loop compute and memory overhead of the same order as Q-learning methods, and can be implemented and optimized in the same loop as any TD or Q-learning method. In this sense, it offers a cheap mechanism to stabilize off-policy TD, particularly in the context of offline RL.
+
+A possible future expansion of this project is to integrate this with an existing offline RL method such as Conservative Q-Learning (CQL) and examine whether this improves performance. We propose CQL specifically because it constrains actions to remain within the support of the data, but does not explicitly constrain the distribution of states to minimize distribution shift. POP methods require adequate support (which CQL provides), and in turn are able to minimize distribution shift. This suggests that the two algorithms may have some symbiotic relationship.
