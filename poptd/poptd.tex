@@ -364,7 +364,7 @@ Figure~\ref{fig:linearerr} reveals that the performance of POP-Q is (as expected
 \begin{figure}[t]
   \centering
   \import{poptd/simpleoffpolicy/}{linear_interpolation.pgf}
-  \caption{Error for POP-Q with linear $g$ functions. Each row corresponds to one basis that is sucessively truncated from 64 elements to 1, and each column corresponds to a basis size $l$ as it is reduced from 64 to 1. The hatched cells correspond to combinations of seeds and bases in which POP-Q performs worse than vanilla Q-learning. For a reasonable $g$-basis, comparable to the value function basis, POP-Q greatly improves performance over vanilla TD. }
+  \caption{Error for POP-Q with linear $g$ functions. Each row corresponds to one basis that is sucessively truncated from 64 elements to 1, and each column corresponds to a basis size $l$ as it is reduced from 64 to 1. The hatched cells correspond to combinations of seeds and bases in which POP-Q performs worse than vanilla Q-learning. For a reasonable $g$-basis, comparable to the size of the value function basis, POP-Q greatly improves performance over vanilla TD. }
   \label{fig:linearerr}
 \end{figure}
 
