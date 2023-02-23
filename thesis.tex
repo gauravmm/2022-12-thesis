@@ -137,11 +137,11 @@
 
 In this thesis, we investigate two different aspects of stability: the stability of neural network dynamics models and the stability of reinforcement learning algorithms. In the first chapter, we propose a new method for learning Lyapunov-stable dynamical models that is stable by construction, even when randomly initialized. We demonstrate the effectiveness of this method on damped multi-link pendulums and show how it can be used to generate high-fidelity video textures.
 
-In the second and third chapters, we focus on stability issues in reinforcement learning. In the second chapter, we demonstrate that regularization, a common approach to addressing instability in temporal difference (TD) learning, is not always effective. We show that TD learning can diverge even when regularization is used and demonstrate this phenomenon in both standard examples and a novel problem we construct.
+In the second and third chapters, we focus on stability issues in reinforcement learning. In the second chapter, we demonstrate that regularization, a common approach to addressing instability in temporal difference (TD) learning, is not always effective. We show that TD learning can diverge even when regularization is used and demonstrate this phenomenon in standard examples as well as a novel problem we construct.
 
-In the third chapter, we propose a new resampling strategy called Projected Off-Policy TD, which resamples TD updates to come from a convex subset of "safe" distributions. We show how this approach can mitigate the distribution shift problem in offline RL and how it may improve the performance of Conservative Q-Learning on a variety of datasets.
+In the third chapter, we propose a new resampling strategy called Projected Off-Policy TD (POP-TD), which resamples TD updates to come from a convex subset of ``safe'' distributions. Unlike existing resampling methods, it need not converge to the on-policy distribution. We show how this approach can mitigate the distribution shift problem in offline RL on a task designed to engender such shift.
 
-Overall, this thesis advances novel methods for dynamics model stability and training stability in reinforcement learning, and points to promising directions for future research on stability in this field.
+Overall, this thesis advances novel methods for dynamics model stability and training stability in reinforcement learning, questions existing assumptions in the field, and points to promising directions for future research on the stable learning of temporal difference models.
 
 
 \clearpage
