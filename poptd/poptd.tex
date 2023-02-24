@@ -2,7 +2,7 @@
 
 A key problem in offline Reinforcement Learning (RL) is the mismatch between the dataset and the distribution over states and actions visited by the learned policy, called the \emph{distribution shift}. This is typically addressed by constraining the learned policy to be close to the data generating policy, at the cost of performance of the learned policy. We propose Projected Off-Policy TD (POP-TD), a new critic update rule that resamples TD updates to allow the learned policy to be distant from the data policy without catastrophic divergence. We show how various offline RL algorithms, notably Conservative Q-Learning (CQL), can be augmented to mitigate distribution shift. We evaluate our algorithm on some toy and small test cases, and set the stage for future work in this area.
 
-\emph{From as-yet unpublished work by \citeauthor{manek2023poptd} (\citeyear{manek2023poptd})}
+\emph{Paper in preparation, by \citeauthor{manek2023poptd} (\citeyear{manek2023poptd})}
 
 \clearpage
 
@@ -185,28 +185,38 @@ We make the strong assumption that $Z$ has rank $m$, where $m << k$. We apply th
 \begin{align}
   Z^\star & = \begin{bmatrix} A \\ B \end{bmatrix} \begin{bmatrix} A \\ B\end{bmatrix}^T
 \end{align}
-This allows us to represent the PSD matrix with controllable rank. Substituting this into the dual formulation, we get:
+This allows us to represent the rank-$m$ PSD matrix $Z^*$ in terms of the unconstrained matrices $A$ and $B$. Substituting this into the dual formulation, we get:
 \begin{align}
   \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left (\tr  \begin{bmatrix} A \\ B \end{bmatrix} \begin{bmatrix} A \\ B \end{bmatrix}^T F(s) \right )  \right ]
 \end{align}
 
 We can leverage the structure of $F(s)$ to simplify the trace term:
 \begin{align}
-  \tr Z^T F(s)
-   & \tr  \begin{bmatrix} A \\ B \end{bmatrix}^T \begin{bmatrix} A \\ B \end{bmatrix}^T F(s)
-  \\ & = \begin{bmatrix} A \\ B \end{bmatrix}^T F(s) \begin{bmatrix} A \\ B \end{bmatrix}
-  \\ & = \begin{bmatrix} A \\ B \end{bmatrix}^T  \mathbf{E}_{s' \sim p(s'|s)}  \left[ \begin{array}{cc} \phi(s)\phi(s)^T & \phi(s)\phi(s')^T \\ \phi(s')\phi(s)^T & \phi(s)\phi(s)^T \end{array} \right]
+   & \tr Z^T F(s)
+  \\ & = \tr \begin{bmatrix} A \\ B \end{bmatrix}^T \begin{bmatrix} A \\ B \end{bmatrix}^T F(s)
+  \\ & = \tr \begin{bmatrix} A \\ B \end{bmatrix}^T F(s) \begin{bmatrix} A \\ B \end{bmatrix}
+  \\ & = \tr \begin{bmatrix} A \\ B \end{bmatrix}^T  \mathbf{E}_{s' \sim p(s'|s)}  \left[ \begin{array}{cc} \phi(s)\phi(s)^T & \phi(s)\phi(s')^T \\ \phi(s')\phi(s)^T & \phi(s)\phi(s)^T \end{array} \right]
   \begin{bmatrix} A \\ B \end{bmatrix}
-  \\  & =  (A + B)^T \phi(s)\phi(s)^T (A+B)
-  - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
+  \\  & = \tr \left[
+    (A + B)^T \phi(s)\phi(s)^T (A+B)
+    - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
+    \right]
+  \\  & = \| (A + B)^T \phi(s) \|^2 - \tr \left[
+    2A^T \mathbf{E}_{s' \sim p(s'|s)} \left[ \phi(s)(\phi(s)- \phi(s'))^T \right] B
+    \right]
 \end{align}
 
 
 This allows us to rewrite the optimization problem as:
 \begin{align}
-  \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left((A + B)^T \phi(s)\phi(s)^T (A+B)
-    - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
-    \right)  \right ]
+  \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left(
+    \begin{array}{l}
+      \| (A + B)^T \phi(s) \|^2
+      \\ \qquad- \tr \left[
+        2A^T \mathbf{E}_{s' \sim p(s'|s)} \left[ \phi(s)(\phi(s)- \phi(s'))^T \right] B
+        \right]
+    \end{array}
+    \right) \right ]
 \end{align}
 where the small parameters $A$ and $B$ can be optimized with regular gradient-descent methods.
 
@@ -217,30 +227,47 @@ We can't directly optimize our problem because that would require us to estimate
 
 We choose to estimate the matrices $A, B \in \mathbb R^{k\times m}$ and separately the function $g_\theta : \mathcal S \in \mathbb R$ where
 \begin{align}
-  g_\theta(s) & \approx (A + B)^T \phi(s)\phi(s)^T (A+B)
-  - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
+  g_\theta(s) & \approx \tr Z^T F(s)
 \end{align}
 which can be approximated as a linear function (or a neural network) with parameters $\theta$. The size of the weights learned by POP-TD are therefore $\mathcal O(k)$, comparable to the size of vanilla Q-learning.
 
 This corresponds to the auxiliary loss term for $A, B$:
 \begin{align}
   \mathcal L_{A,B}(s, s')
-   & = g_\theta(s) \left [
-    (A + B)^T \phi(s)\phi(s)^T (A+B)
-    - 2A^T \phi(s)(\phi(s)- \phi(s'))^T B
+   & = \exp(g_\theta(s)) \left [
+    \| (A + B)^T \phi(s) \|^2 - \tr \left[
+      2A^T \phi(s)(\phi(s)- \phi(s'))^T B
+      \right]
     \right ]
   \intertext{and for $g$:}
   \mathcal L_{g}(s, s')
    & = \left( g_\theta(s) -
   \left [
-      (A + B)^T \phi(s)\phi(s)^T (A+B)
-      - 2A^T \phi(s)(\phi(s)- \phi(s'))^T B
+      \| (A + B)^T \phi(s) \|^2 - \tr \left[
+        2A^T \phi(s)(\phi(s)- \phi(s'))^T B
+        \right]
       \right ]
   \right)^2
 \end{align}
 
 And finally, to complete this, we multiply each update of $w$ by $\exp(g(s))$ to resample it so it appears to come from the ``safe'' distribution, which completes the description of the algorithm!
 
+\paragraph{Computing the loss} A naive implementation of the loss function will require intermediate matrices of size $[k\times k]$. We can improve speed by computing the loss in terms of $[m\times k]$ intermediates instead. For some $(s, s')$, this can be done as:
+\begin{align}
+  M_A & = A^T \phi(s) \in \mathbb R^{m\times k} \nonumber
+  \\  M_B & = B^T \phi(s) \in \mathbb R^{m\times k} \nonumber
+  \\  M_B' & = B^T \phi(s') \in \mathbb R^{m\times k} \nonumber
+  \\  \mathcal L_{A,B}(s, s') & \equiv \exp(g_\theta(s)) \left [
+    \| M_A + M_B \|^2
+    - 2 M_A \cdot (M_B - M_B')
+    \right ]
+  \\    \mathcal L_{g}(s, s') & \equiv \left( g_\theta(s) -\left [
+      \| M_A + M_B \|^2
+      - 2 M_A \cdot (M_B - M_B')
+      \right ]
+  \right)^2
+\end{align}
+where $\cdot$ is the dot product. This sequence of operations should be $\mathcal O(m^2 k)$, which is much quicker than the naive $\mathcal O(m k^2)$.
 
 \subsection{POP-Q-Learning}\label{sec:popq}\label{sec:pop-q-derivation}
 
@@ -263,7 +290,7 @@ See \cref{sec:pop-q-derivation} for a detailed derivation.
 
 Finally, for our method to applied to modern deep RL problems, we must extend our approach to non-linear Q-functions.
 To do so, we approximate the Q-function with a neural network, $Q_{\theta^Q}$ parameterized by $\theta^Q$ and consider a stochastic parameterized policy $\pi_{\theta^\pi}$.
-To update $Q_{\theta^Q}$, we used a squared Bellman loss, $\mathcal{L}_Q(\theta^Q) = (Q_{\theta^Q}(s, a) - r - \gamma Q_{\theta^Q}(s', \pi_{\theta^\pi}(s')))^2$, which we re-weight with $e^g(s)$ as before.
+To update $Q_{\theta^Q}$, we used a squared Bellman loss, $\mathcal{L}_Q(\theta^Q) = (Q_{\theta^Q}(s, a) - r - \gamma Q_{\theta^Q}(s', \pi_{\theta^\pi}(s')))^2$, which we reweigh with $e^{g(s)}$ as before.
 For our offline RL experiments, we also add CQL regularization \citep{kumar2020cql} to our Q-learning updates to prevent over-optimism on low-support regions of the state-action space.
 To update our linear dual variables $y$, we use the penultimate layer of $Q_{\theta^Q}$ as our feature vector.
 Finally, we use a SAC-style entropy regularized loss to update our policy network, $\pi_{\theta^\pi}$.
@@ -363,7 +390,7 @@ Figure~\ref{fig:linearerr} reveals that the performance of POP-Q is (as expected
 \begin{figure}[t]
   \centering
   \import{poptd/simpleoffpolicy/}{linear_interpolation.pgf}
-  \caption{Error for POP-Q with linear $g$ functions. Each row corresponds to one basis that is sucessively truncated from 64 elements to 1, and each column corresponds to a basis size $l$ as it is reduced from 64 to 1. The hatched cells correspond to combinations of seeds and bases in which POP-Q performs worse than vanilla Q-learning. For a reasonable $g$-basis, comparable to the size of the value function basis, POP-Q greatly improves performance over vanilla TD. }
+  \caption{Error for POP-Q with linear $g$ functions. Each row corresponds to one starting basis, and each column corresponds to a basis size $l$ as it is reduced from 64 to 1. The hatched cells correspond to combinations of seeds and bases in which POP-Q performs worse than vanilla Q-learning. Under linear approximation POP-Q greatly improves performance over vanilla TD. }
   \label{fig:linearerr}
 \end{figure}
 

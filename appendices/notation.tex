@@ -6,7 +6,7 @@ Standard notation for RL concepts through this thesis.
 	\multicolumn{2}{c}{Symbol} & Description
 	\\\hline\endhead
 	$n$                        & $\in\mathbb Z^+$ & Number of states.
-	\\  $k$ & $\in\mathbb Z^+$ & Number of features in the value basiss.
+	\\  $k$ & $\in\mathbb Z^+$ & Number of features in the value basis.
 	\\  $\pi$ & $\in\mathbb R^{n}$ & on-policy distribution.
 	\\  $\mu$ & $\in\mathbb R^{n}$ & sampling distribution, may be on- or off-policy.
 	\\  $\Phi$ & $\in \mathbb R^{[n\times k]}$ & Feature basis for the value function
@@ -18,19 +18,29 @@ Standard notation for RL concepts through this thesis.
 	\\  $\|x\|$ & $\in\mathbb R^+_0$ & $\ell_2$-norm of vector or matrix $x$, equal to $\sqrt{x^\top x}$
 	\\  $\|x\|_D$ & $\in\mathbb R^+_0$ & $\ell_2$-norm of vector or matrix $x$ under $D$, equal to $\sqrt{x^\top D x}$
 	\\ \hline\hline
-	\multicolumn{3}{l}{\textbf{Regularization}}
-	\\ \hline
+\end{longtable}
+
+\clearpage
+\paragraph{Regularization}
+\begin{longtable}{rl p{4in}}\hline\hline
+	\multicolumn{2}{c}{Symbol} & Description
+	\\\hline\endhead
 	\\  $\eta$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter
 	\\  $h$ & $\in[0, 1]$ & distribution parameter used to express a family of possible sampling distributions.
 	\\  $\eta_m$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter for emphasis model in COF-PAC (the Emphatic algorithm we analyze)
 	\\  $\eta_v$ & $\in \mathbb R^+_0$ & $\ell_2$ regularization parameter for value model in COF-PAC (the Emphatic algorithm we analyze)
 	\\  $\upsilon$ & : $\mathbb R^+ \to \mathbb R^{n}$ & apparent distribution induced by $\eta$-regularizing the emphatic correction of off-policy $\mu$ to on-policy $\pi$
 	\\ \hline\hline
-	\multicolumn{3}{l}{\textbf{Projected Off-Policy}}
-	\\ \hline
+\end{longtable}
+
+
+\paragraph{Projected Off-Policy}
+\begin{longtable}{rl p{4in}}\hline\hline
+	\multicolumn{2}{c}{Symbol} & Description
+	\\\hline\endhead
 	$m$                        & $\in\mathbb Z^+$ & Number of features in the $g$-basis (for POP methods).
 	\\  $l$ & $\in\mathbb Z^+$ & Rank of $A$ and $B$ two-timescales parameters (for POP methods).
-	\\ $g$                        & $: \mathcal S \to \mathbb R$ & dual objective compoenent, learned opposite $A$ and $B$ in POP methods.
+	\\ $g$                        & $: \mathcal S \to \mathbb R$ & dual objective component, learned opposite $A$ and $B$ in POP methods.
 	\\  $e^{g(s)}$ & $\in \mathbb R^+$ & The resampling coefficient for TD updates from state $s$
 	\\  $\Phi_g$ & $\in \mathbb R^{[n\times m]}$ & Feature basis for the learned linear $g$ function
 	\\  $w_g$ & $\in \mathbb R^{[m\times 1]}$ & Linear weights for learned $g$ function
