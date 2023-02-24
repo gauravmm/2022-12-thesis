@@ -199,10 +199,10 @@ We can leverage the structure of $F(s)$ to simplify the trace term:
   \begin{bmatrix} A \\ B \end{bmatrix}
   \\  & = \tr \left[
     (A + B)^T \phi(s)\phi(s)^T (A+B)
-    - 2A^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] B
+    - 2B^T \mathbf{E}_{s' \sim p(s'|s)} \left [\phi(s)(\phi(s)- \phi(s'))^T \right ] A
     \right]
   \\  & = \| (A + B)^T \phi(s) \|^2 - \tr \left[
-    2A^T \mathbf{E}_{s' \sim p(s'|s)} \left[ \phi(s)(\phi(s)- \phi(s'))^T \right] B
+    2B^T \mathbf{E}_{s' \sim p(s'|s)} \left[ \phi(s)(\phi(s)- \phi(s'))^T \right] A
     \right]
 \end{align}
 
@@ -213,7 +213,7 @@ This allows us to rewrite the optimization problem as:
     \begin{array}{l}
       \| (A + B)^T \phi(s) \|^2
       \\ \qquad- \tr \left[
-        2A^T \mathbf{E}_{s' \sim p(s'|s)} \left[ \phi(s)(\phi(s)- \phi(s'))^T \right] B
+        2B^T \mathbf{E}_{s' \sim p(s'|s)} \left[ \phi(s)(\phi(s)- \phi(s'))^T \right] A
         \right]
     \end{array}
     \right) \right ]
@@ -236,7 +236,7 @@ This corresponds to the auxiliary loss term for $A, B$:
   \mathcal L_{A,B}(s, s')
    & = \exp(g_\theta(s)) \left [
     \| (A + B)^T \phi(s) \|^2 - \tr \left[
-      2A^T \phi(s)(\phi(s)- \phi(s'))^T B
+      2B^T \phi(s)(\phi(s)- \phi(s'))^T A
       \right]
     \right ]
   \intertext{and for $g$:}
@@ -244,7 +244,7 @@ This corresponds to the auxiliary loss term for $A, B$:
    & = \left( g_\theta(s) -
   \left [
       \| (A + B)^T \phi(s) \|^2 - \tr \left[
-        2A^T \phi(s)(\phi(s)- \phi(s'))^T B
+        2B^T \phi(s)(\phi(s)- \phi(s'))^T A
         \right]
       \right ]
   \right)^2
@@ -255,15 +255,15 @@ And finally, to complete this, we multiply each update of $w$ by $\exp(g(s))$ to
 \paragraph{Computing the loss} A naive implementation of the loss function will require intermediate matrices of size $[k\times k]$. We can improve speed by computing the loss in terms of $[m\times k]$ intermediates instead. For some $(s, s')$, this can be done as:
 \begin{align}
   M_A & = A^T \phi(s) \in \mathbb R^{m\times k} \nonumber
+  \\  M_A' & = A^T \phi(s') \in \mathbb R^{m\times k} \nonumber
   \\  M_B & = B^T \phi(s) \in \mathbb R^{m\times k} \nonumber
-  \\  M_B' & = B^T \phi(s') \in \mathbb R^{m\times k} \nonumber
   \\  \mathcal L_{A,B}(s, s') & \equiv \exp(g_\theta(s)) \left [
     \| M_A + M_B \|^2
-    - 2 M_A \cdot (M_B - M_B')
+    - 2 (M_A - M_A') \cdot M_B
     \right ]
   \\    \mathcal L_{g}(s, s') & \equiv \left( g_\theta(s) -\left [
       \| M_A + M_B \|^2
-      - 2 M_A \cdot (M_B - M_B')
+      - 2 (M_A - M_A') \cdot M_B
       \right ]
   \right)^2
 \end{align}
