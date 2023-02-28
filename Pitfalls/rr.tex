@@ -343,18 +343,18 @@ So far, we have shown how regularization causes a shift in the apparent distribu
 	\Phi_v                                                      & = \begin{bmatrix}
 		                                                                1 & 0 \\ 0 & -2.69 \\ \sfrac12(\epsilon+1.05) & -\sfrac12(\epsilon+1.05)
 	                                                                \end{bmatrix} \\
-    \epsilon                                                    & = 2\times 10^{-4}
-    \intertext{We use this basis to compute the state-rewards $R=(I-\gamma P)V=[-0.43~1.26~-0.38]$ and define the matrices $A_v$ and $C_v$ and the solution $w^*_v(\eta)$:}
-    A_v                                                         & = \Phi_v^\top (I-\gamma P^\top) D \Phi_v                                  \\
-    C_v                                                         & = \Phi_v^\top D \Phi_v                                                    \\
-    w_v^*(\eta)                                                 & = (A_v^\top C_v^{-1} A_v + \eta I)^{-1} A_v^\top C_v^{-1} \Phi_v^\top D R
-    \intertext{We can use this solution to compute the error between the value function and the true values, $\|\Phi_v w_v(\eta) - V\|$. First, under the corrected distribution without regularization $\upsilon(0) \equiv \pi$:}
-    \Phi_v w_v^*(0)|_{D=\text{diag}(\upsilon(0))}               & = 0.000865
-    \intertext{Then, with regularization in the value function (but not in the emphasis function):}
-    \Phi_v w_v^*(2\times 10^{-4})|_{D=\text{diag}(\upsilon(0))} & = 0.0162
-    \intertext{Then, under the apparent distribution $\upsilon$ induced by use of regularization in the emphasis function, without and with regularization:}
-    \Phi_v w_v^*(0)|_{D=\text{diag}(\upsilon(2\times 10^{-4}))} & = 418.601
-    \\ \Phi_v w_v^*(2\times 10^{-4})|_{D=\text{diag}(\upsilon(2\times 10^{-4}))} & = 3.00
+	\epsilon                                                    & = 2\times 10^{-4}
+	\intertext{We use this basis to compute the state-rewards $R=(I-\gamma P)V=[-0.43~1.26~-0.38]$ and define the matrices $A_v$ and $C_v$ and the solution $w^*_v(\eta)$:}
+	A_v                                                         & = \Phi_v^\top (I-\gamma P^\top) D \Phi_v                                  \\
+	C_v                                                         & = \Phi_v^\top D \Phi_v                                                    \\
+	w_v^*(\eta)                                                 & = (A_v^\top C_v^{-1} A_v + \eta I)^{-1} A_v^\top C_v^{-1} \Phi_v^\top D R
+	\intertext{We can use this solution to compute the error between the value function and the true values, $\|\Phi_v w_v(\eta) - V\|$. First, under the corrected distribution without regularization $\upsilon(0) \equiv \pi$:}
+	\Phi_v w_v^*(0)|_{D=\text{diag}(\upsilon(0))}               & = 0.000865
+	\intertext{Then, with regularization in the value function (but not in the emphasis function):}
+	\Phi_v w_v^*(2\times 10^{-4})|_{D=\text{diag}(\upsilon(0))} & = 0.0162
+	\intertext{Then, under the apparent distribution $\upsilon$ induced by use of regularization in the emphasis function, without and with regularization:}
+	\Phi_v w_v^*(0)|_{D=\text{diag}(\upsilon(2\times 10^{-4}))} & = 418.601
+	\\ \Phi_v w_v^*(2\times 10^{-4})|_{D=\text{diag}(\upsilon(2\times 10^{-4}))} & = 3.00
 \end{align}
 It is immediately obvious that the use of regularization in the emphasis function causes the learned value function to be incorrect. Including a regularizing term in the value estimate is not sufficient to fix the value function. This completes the example.
 

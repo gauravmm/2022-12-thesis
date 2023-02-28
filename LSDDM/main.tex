@@ -206,7 +206,7 @@ We proposed a method for learning stable non-linear dynamical systems defined by
 
 After the successes of our stable dynamics model, we attempted to extend it to also learn stable policies and value functions. The intuitive extension to this is to replace the dynamics model $\hat f$ with fixed (known) dynamics $\tilde f$ and a learnable policy network $\pi$. That is, we train to minimize:
 \begin{align}
-  \mathsf{ReLU}\bigl(\nabla V(x)^T \tilde{f}(x, \pi) + \alpha V (x) \bigr)
+	\mathsf{ReLU}\bigl(\nabla V(x)^T \tilde{f}(x, \pi) + \alpha V (x) \bigr)
 \end{align}
 given traces from simulated dynamics. We also transformed the dynamics so that the goal state was positioned at the origin, choosing suitable transformations for the dynamics and Lyapunov functions. As required by the approach, we attempted to train it from trajectory samples to minimize the error over one step.
 

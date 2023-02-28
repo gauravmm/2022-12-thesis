@@ -1,6 +1,6 @@
 \input{poptd/colorglyphs.tex}
 
-A key problem in offline Reinforcement Learning (RL) is the mismatch between the dataset and the distribution over states and actions visited by the learned policy, called the \emph{distribution shift}. This is typically addressed by constraining the learned policy to be close to the data generating policy, at the cost of performance of the learned policy. We propose Projected Off-Policy TD (POP-TD), a new critic update rule that resamples TD updates to allow the learned policy to be distant from the data policy without catastrophic divergence. We show how various offline RL algorithms, notably Conservative Q-Learning (CQL), can be augmented to mitigate distribution shift. We evaluate our algorithm on some toy and small test cases, and set the stage for future work in this area.
+A key problem in offline Reinforcement Learning (RL) is the mismatch between the dataset and the distribution over states and actions visited by the learned policy, called the \emph{distribution shift}. This is typically addressed by constraining the learned policy to be close to the data generating policy, at the cost of performance of the learned policy. We propose Projected Off-Policy TD (POP-TD), a new critic update rule that resamples TD updates to allow the learned policy to be distant from the data policy without catastrophic divergence. We show how this algorithm works on a well-understood toy example from the literature, and then characterize its performance with varying parameterization on a specially-constructed offline RL task. This is a novel approach to stabilizing off-policy RL, and sets the stage for future work on larger tasks.
 
 \emph{Paper in preparation, by \citeauthor{manek2023poptd} (\citeyear{manek2023poptd})}
 
@@ -13,7 +13,7 @@ Reinforcement Learning (RL) aims to learn policies that maximize rewards in Mark
 This is useful in environments that are expensive to explore (such as running a Tokamak nuclear reactor \cite{degrave2022magnetic}), or high-dimensional environments with cheap access to expert or near-expert trajectories (such as video games). \citet{levine2020survey} present a comprehensive survey of the area.
 
 Since in offline RL the data is gathered before training begins, there is a mismatch between the the state-distributions implied by the learned policy and the data.
-When applying naive RL algorithms in this setting, they tend to bootstrap from regions with little or no data, causing runaway self-reinforcement.S
+When applying naive RL algorithms in this setting, they tend to bootstrap from regions with little or no data, causing runaway self-reinforcement.
 Offline RL algorithms like Conservative Q-Learning (CQL) \cite{kumar2020cql}, on the other hand, generally constrain the learned policy to remain within the support of the data. While this works well in practice, there still remains a large gap in performance between online and offline RL. One reason for this is an additional subtlety to distribution shift: because of the combination of off-policy RL and function approximation, it is possible for RL to diverge if the generating policy and the learned policy are sufficiently different.
 
 \begin{figure}[t]

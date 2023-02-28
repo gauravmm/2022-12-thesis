@@ -155,8 +155,8 @@ Overall, this thesis advances novel methods for dynamics model stability and tra
 \chapter{Introduction}
 
 In this thesis we examine two notions of stability: the predictions of neural network dynamics models and the training of reinforcement learning algorithms. The transition from the first notion of stability to the second is natural: the parameters of a stably trained model circumscribes, in parameter-space, a stable trajectory.
-This relationship between stabilities has significant precedence in the foundational work of Temporal Difference (TD) learning theory \cite{tsitsiklis1996analysis}. The goal for the work in this thesis was to relate these two stabilities, designing new RL algorithms with favorable stability properties.
-Instead, a major section of this thesis is devoted to demonstrating that the stability of TD learning is not as well understood as previously thought.
+This relationship between stabilities has significant precedence in the foundational work of Temporal Difference (TD) learning theory \cite{tsitsiklis1996analysis}. % The goal for the work in this thesis was to relate these two stabilities, designing new RL algorithms with favorable stability properties.
+% Instead, a major section of this thesis is devoted to demonstrating that the stability of TD learning is not as well understood as previously thought.
 
 In the first chapter we propose a new method for learning Lyapunov-stable dynamical models and the certifying Lyapunov function in a fully end-to-end manner.
 This works by carefully constructing a neural network to act as a Lyapunov function and learning a separate, unconstrained model. These two models are combined with a novel reprojection layer to produce models that are guaranteed stable by construction, even without any training. We show that such learning systems are able to model simple dynamical systems such as pendulums, and can be combined with additional deep generative models to learn complex dynamics, such as video textures, in a fully end-to-end fashion, given Temporal Difference (TD) data.
