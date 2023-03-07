@@ -89,13 +89,13 @@ where $\Pi_\mu = \Phi(\Phi^\top D_{\mu} \Phi)^{-1}\Phi^\top D_{\mu}$ is the proj
   \end{align} \label{thm:boundTDError}
 \end{theorem}
 
-\subsection{Kolter's Non-Expansion Criterion (KNEC)}
+\subsection{The Non-Expansion Criterion (NEC)}
 Thus far we have left open the notion of a ``safe'' distribution to resample TD updates to. The on-policy distribution must be safe, but we need to establish a criteria for acceptable off-policy distributions. \citeauthor{tsitsiklis1996analysis} lay the groundwork for this by analyzing the training of on-policy TD as a dynamical system and showing that once TD reaches its fixed point, subsequent TD updates form a non-expansive mapping around that fixed point (\citeyear[lemma 4]{tsitsiklis1996analysis}), and therefore prove that on-policy TD does not diverge.
 
-To do this, they begin with the fact that error bounds from on-policy TD follow the property that the $D-$norm of any vector $x \in \mathbb R^n$ is non-expansive through the transition matrix. That is: $\|Px\|_D \leq \|x\|_D$, where $D = \diag(\pi)$. \citet{kolter2011fixed} extend this analysis to the off-policy case, deriving a linear matrix inequality (LMI) under which the TD updates are guaranteed to be non-expansive around the fixed point. This is Kolter's Non-Expansion Criterion (\citeyear{kolter2011fixed}):
+To do this, they begin with the fact that error bounds from on-policy TD follow the property that the $D-$norm of any vector $x \in \mathbb R^n$ is non-expansive through the transition matrix. That is: $\|Px\|_D \leq \|x\|_D$, where $D = \diag(\pi)$. \citet{kolter2011fixed} extend this analysis to the off-policy case, deriving a linear matrix inequality (LMI) under which the TD updates are guaranteed to be non-expansive around the fixed point. This is the Non-Expansion Criterion (\citeyear{kolter2011fixed}):
 \begin{align}
   \|\Phi w - V\|_D                  & \leq \frac{1 + \gamma \kappa(D^{-\sfrac{1}{2}}D^{\sfrac{1}{2}})}{1 - \gamma} \|\Pi_D V - V\|_D
-  \intertext{From this bound, he derives \emph{Kolter's non-expansion condition}:}
+  \intertext{From this bound, he derives \emph{The non-expansion criterion}:}
   \|\Pi_D P\Phi w\|_D               & \leq \|\Phi w\|_D \qquad (\forall w \in \mathbb R^n) \label{eqn:kolterthm2bound}
   \intertext{This holds if and only if the matrix $F_D$ is positive semi-definite}
   F_D                               & \equiv \begin{bmatrix}
@@ -127,7 +127,7 @@ Directly constructing $F(s)$ or $F(s, s')$ is impossible on all but the simplest
 
 \section{Projected Off-Policy TD (POP-TD) }
 
-We propose an alternative approach to stabilizing off-policy training, based on Kolter's Non-Expansion Criterion \citep{kolter2011fixed}. POP-TD identifies a convex set of ``safe'' distributions that satisfy KNEC and reweighs TD updates to come from that set. In contrast to TD-DO, POP-TD uses solves a different optimization problem using a two-timescales update with fixed cost per iteration, allowing it to scale to real-world problems.
+We propose an alternative approach to stabilizing off-policy training, based on the Non-Expansion Criterion \citep{kolter2011fixed}. POP-TD identifies a convex set of ``safe'' distributions that satisfy KNEC and reweighs TD updates to come from that set. In contrast to TD-DO, POP-TD uses solves a different optimization problem using a two-timescales update with fixed cost per iteration, allowing it to scale to real-world problems.
 
 We begin by deriving the projected off-policy update for Markov Chains, without a separate policy function. We will extend this derivation to support actions and Markov Decision Processes (MDPs) in Section~\ref{sec:popq}. Our algorithm resamples TD updates so they come from some distribution $q$ for which KNEC holds. Given input data $(x_1, x_2, \ldots)$, this is the same as finding a set of weights $q_1, q_2, \ldots$ such that
 \begin{align}

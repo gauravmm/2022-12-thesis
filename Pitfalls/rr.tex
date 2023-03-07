@@ -358,13 +358,13 @@ So far, we have shown how regularization causes a shift in the apparent distribu
 \end{align}
 It is immediately obvious that the use of regularization in the emphasis function causes the learned value function to be incorrect. Including a regularizing term in the value estimate is not sufficient to fix the value function. This completes the example.
 
-\subsubsection{Kolter's non-expansion condition and our counterexample. }
-COF-PAC makes the strong assumption that Kolter's relaxed-contraction condition~\cite[eqn.~10]{kolter2011fixed} holds in both the emphasis and value models~\cite[asm.~4]{zhang2020provably}. This is itself a very strong condition because it inherently assumes that both the emphasis and value models are not subject to runaway TD~\cite[asm.~4]{zhang2020provably}. Specifically, they make the strong assumption that Kolter's relaxed-contraction condition~\cite[eqn.~10]{kolter2011fixed} holds in the emphasis model at $\mu$ and value model at $\upsilon$. Kolter's condition selects a convex subset of distributions under which one-step transition followed by projection onto $\Phi$ is non-expansive. We illustrate these regions in Figure~\ref{fig:koldercond}. Even in the one-dimensional parameterization shown, this condition only holds in a small sub-region of the space and therefore appears to be a very strong condition. Empirically determining if such a condition holds (or training models to enforce it) may be possible with TD-DO~\cite[sec~4.1]{kolter2011fixed}, but it is not clear how that method interacts with regularization.~\label{sec:nosingularity}
+\subsubsection{The non-expansion condition and our counterexample. }
+COF-PAC makes the strong assumption that Kolter's non-expansion condition~\cite[eqn.~10]{kolter2011fixed} holds in both the emphasis and value models~\cite[asm.~4]{zhang2020provably}. This is itself a very strong condition because it inherently assumes that both the emphasis and value models are not subject to runaway TD~\cite[asm.~4]{zhang2020provably}. Specifically, they make the strong assumption that this condition~\cite[eqn.~10]{kolter2011fixed} holds in the emphasis model at $\mu$ and value model at $\upsilon$. This condition selects a convex subset of distributions under which one-step transition followed by projection onto $\Phi$ is non-expansive. We illustrate these regions in Figure~\ref{fig:koldercond}. Even in the one-dimensional parameterization shown, this condition only holds in a small sub-region of the space and therefore appears to be a very strong condition. Empirically determining if such a condition holds (or training models to enforce it) may be possible with TD-DO~\cite[sec~4.1]{kolter2011fixed}, but it is not clear how that method interacts with regularization.~\label{sec:nosingularity}
 
 \begin{figure}
 	\centering
 	\input{Pitfalls/koltercond/koltercond.tex}
-	\caption{Kolter's non-expansion condition holds in the shaded region of each graph. These correspond to Figure~\ref{fig:fixedpointp}, Figure~\ref{fig:emphimp}, and Figure~\ref{fig:emphval} respectively. }
+	\caption{The non-expansion condition holds in the shaded region of each graph. These correspond to Figure~\ref{fig:fixedpointp}, Figure~\ref{fig:emphimp}, and Figure~\ref{fig:emphval} respectively. }
 	\label{fig:koldercond}
 \end{figure}
 
