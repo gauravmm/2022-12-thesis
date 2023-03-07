@@ -252,11 +252,11 @@ This corresponds to the auxiliary loss term for $A, B$:
 
 And finally, to complete this, we multiply each update of $w$ by $\exp(g(s))$ to resample it so it appears to come from the ``safe'' distribution, which completes the description of the algorithm!
 
-\paragraph{Computing the loss} A naive implementation of the loss function will require intermediate matrices of size $[k\times k]$. We can improve speed by computing the loss in terms of $[m\times k]$ intermediates instead. For some $(s, s')$, this can be done as:
+\paragraph{Computing the loss} A naive implementation of the loss function will require intermediate matrices of size $[k\times k]$. We can improve speed by computing the loss in terms of $[m\times 1]$ intermediates instead. For some $(s, s')$, this can be done as:
 \begin{align}
-  M_A & = A^T \phi(s) \in \mathbb R^{m\times k} \nonumber
-  \\  M_A' & = A^T \phi(s') \in \mathbb R^{m\times k} \nonumber
-  \\  M_B & = B^T \phi(s) \in \mathbb R^{m\times k} \nonumber
+  M_A & = A^T \phi(s) \in \mathbb R^{m} \nonumber
+  \\  M_A' & = A^T \phi(s') \in \mathbb R^{m} \nonumber
+  \\  M_B & = B^T \phi(s) \in \mathbb R^{m} \nonumber
   \\  \mathcal L_{A,B}(s, s') & \equiv \exp(g_\theta(s)) \left [
     \| M_A \|^2 + \| M_B \|^2 + 2 M_A' \cdot M_B
     \right ]
