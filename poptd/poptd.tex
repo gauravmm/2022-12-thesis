@@ -187,7 +187,7 @@ We make the strong assumption that $Z$ has rank $m$, where $m << k$. We apply th
 \end{align}
 This allows us to represent the rank-$m$ PSD matrix $Z^*$ in terms of the unconstrained matrices $A$ and $B$. Substituting this into the dual formulation, we get:
 \begin{align}
-  \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left (\tr  \begin{bmatrix} A \\ B \end{bmatrix} \begin{bmatrix} A \\ B \end{bmatrix}^T F(s) \right )  \right ]
+  \underset{A,B}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left (\tr  \begin{bmatrix} A \\ B \end{bmatrix} \begin{bmatrix} A \\ B \end{bmatrix}^T F(s) \right )  \right ]
 \end{align}
 
 We can leverage the structure of $F(s)$ to simplify the trace term:
@@ -209,7 +209,7 @@ We can leverage the structure of $F(s)$ to simplify the trace term:
 
 This allows us to rewrite the optimization problem as:
 \begin{align}
-  \underset{y}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left(
+  \underset{A,B}{\text{minimize}} & \;\; \mathbf{E}_{s\sim\mu} \left [ \exp\left(
     \begin{array}{l}
       \| (A + B)^T \phi(s) \|^2
       \\ \qquad- \tr \left[
