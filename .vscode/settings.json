@@ -79,7 +79,6 @@
         "-interaction=nonstopmode",
         "-file-line-error",
         "-shell-escape",
-        "-outdir=build",
         "thesis"
     ],
     "workbench.colorTheme": "Visual Studio Light",

@@ -1,6 +1,7 @@
-\documentclass[11pt]{book}
+\documentclass[12pt]{cmuthesis}
+\usepackage[letterpaper,twoside,vscale=.7,hscale=.7,nomarginpar,hmarginratio=1:1]{geometry}
 
-\usepackage[letterpaper]{geometry}
+\draftstamp{\today}{DRAFT}
 
 \usepackage[utf8]{inputenc} % allow utf-8 input
 \usepackage{hyperref}       % hyperlinks
@@ -30,9 +31,7 @@
 \usepackage{algorithm,algorithmic}
 \usepackage{longtable}
 \usepackage{import}
-
-\newenvironment{abstract}{}{}
-\usepackage{abstract}
+\usepackage{adjustbox}
 
 \DeclareMathOperator*{\minimize}{minimize}
 \newtheorem{theorem}{Theorem}
@@ -53,10 +52,7 @@
 \input{latexhacks/math_commands.tex}
 
 %\newfontfamily\OpenSans{Open Sans}[Scale=MatchLowercase]
-%\newfontfamily\SourceSerifPro{Source Serif Pro}[Scale=MatchLowercase,Ligatures=TeX]
-
-%\bibliographystyle{abbrvnat}
-\bibliography{biblio.bib}
+%\newfontfamily\SourceSerifPro{Source Serif Pro}[Scale=MatchLowercase,Ligatures=TeX]newgeometry{left=3cm,bottom=0.1cm} where
 
 \pgfplotsset{compat=1.18}
 \usetikzlibrary{pgfplots.groupplots,positioning,fit,patterns,decorations.pathreplacing,external}
@@ -75,7 +71,7 @@
 
 \onehalfspacing
 
-\title{ Temporal Difference Learning and Stable Models }
+\title{ Stable Models and Temporal Difference Learning }
 \author{ Gaurav Manek }
 \date{\today}
 
@@ -88,60 +84,51 @@
 \fancyhead[ER]{}
 \fancyhead[OL]{}
 \fancyhead[OR]{\rightmark}
-
 \setlength{\headheight}{13.6pt}
 
+\addbibresource{biblio.bib}
+
 \begin{document}
+\newgeometry{vscale=.8,hscale=.75}
+
 \frontmatter
+\pagestyle{empty}
 
-\begin{titlepage}
-	{
-		\hfill\includegraphics[width=1.25in,trim=0 0 .125in .25in]{cmu/cmu-wordmark-square-w-on-r}
-	}
-	\begin{center}{%\SourceSerifPro
-		\vfill
+\title{
+	{\bf Stable Models and Temporal Difference Learning }}
+\author{Gaurav Manek}
+\date{March 2023}
+\Year{2023}
+\trnumber{CMU-CS-23-103}
 
-		{\Huge%\OpenSans
-		{
-		{Stable Models}\\[-.75em]
-		\rule{0.25\textwidth}{1pt}
-		\raisebox{-.1\baselineskip}{\textit{\Large and}}
-		\rule{0.25\textwidth}{1pt}\\[.5em]
-		{Temporal Difference Learning}
-		}
-		}\\
+\committee{
+	J. Zico Kolter, Chair \\
+	David Held \\
+	Deepak Pathak \\
+	Sergey Levine (Berkeley)
+}
 
+\support{This research was sponsored by A*STAR Graduate Academy, Robert Bosch GmbH, and the NSS Fellowship. }
+\disclaimer{The views and conclusions contained in this document are those of the author and should not be interpreted as representing the official policies, either expressed or implied, of any sponsoring institution, the U.S. government or any other entity. }
+\keywords{Lyapunov Stability, Regularization, Deadly Triad, Offline Reinforcement Learning, Temporal Difference Learning, Reinforcement Learning, Neural Networks, Machine Learning Theory}
 
-		\vspace{0.25in}
-
-		\textbf{\large Gaurav Manek}\\
-
-		\vfill
-
-		Thesis
-
-		\textit{In Partial Fulfillment of the Computer Science PhD Program}
-
-		\vspace{0.33in}
-		Computer Science Department\\
-		School of Computer Science\\
-		Carnegie Mellon University\\
-		\today
-
-		}\end{center}
-\end{titlepage}
+\maketitle
 
 \cleardoublepage
+\restoregeometry
+\pagestyle{plain} % for toc, was empty
 
-\chapter{Abstract}
 
-In this thesis, we investigate two different aspects of stability: the stability of neural network dynamics models and the stability of reinforcement learning algorithms. In the first chapter, we propose a new method for learning Lyapunov-stable dynamical models that is stable by construction, even when randomly initialized. We demonstrate the effectiveness of this method on damped multi-link pendulums and show how it can be used to generate high-fidelity video textures.
+\begin{abstract}
+	In this thesis, we investigate two different aspects of stability: the stability of neural network dynamics models and the stability of reinforcement learning algorithms. In the first chapter, we propose a new method for learning Lyapunov-stable dynamical models that is stable by construction, even when randomly initialized. We demonstrate the effectiveness of this method on damped multi-link pendulums and show how it can be used to generate high-fidelity video textures.
 
-In the second and third chapters, we focus on stability issues in reinforcement learning. In the second chapter, we demonstrate that regularization, a common approach to addressing instability in temporal difference (TD) learning, is not always effective. We show that TD learning can diverge even when regularization is used and demonstrate this phenomenon in standard examples as well as a novel problem we construct.
+	In the second and third chapters, we focus on stability issues in reinforcement learning. In the second chapter, we demonstrate that regularization, a common approach to addressing instability in temporal difference (TD) learning, is not always effective. We show that TD learning can diverge even when regularization is used and demonstrate this phenomenon in standard examples as well as a novel problem we construct.
 
-In the third chapter, we propose a new resampling strategy called Projected Off-Policy TD (POP-TD), which resamples TD updates to come from a convex subset of ``safe'' distributions. Unlike existing resampling methods, it need not converge to the on-policy distribution. We show how this approach can mitigate the distribution shift problem in offline RL on a task designed to engender such shift.
+	In the third chapter, we propose a new resampling strategy called Projected Off-Policy TD (POP-TD), which resamples TD updates to come from a convex subset of ``safe'' distributions. Unlike existing resampling methods, it need not converge to the on-policy distribution. We show how this approach can mitigate the distribution shift problem in offline RL on a task designed to maximize such shift.
 
-Overall, this thesis advances novel methods for dynamics model stability and training stability in reinforcement learning, questions existing assumptions in the field, and points to promising directions for future research on the stable learning of temporal difference models.
+	Overall, this thesis advances novel methods for dynamics model stability and training stability in reinforcement learning, questions existing assumptions in the field, and points to promising directions for stability in model and reinforcement learning.
+\end{abstract}
+
 
 
 \clearpage
@@ -165,7 +152,8 @@ Next, we attempted to extend this work to learn control policies that produce st
 
 TD is combined with function approximation (i.e. neural networks) and off-policy learning in modern Reinforcement Learning. However, these three ingredients are known as the \emph{deadly triad} \cite[p.~264]{sutton2020reinforcement}, because they are known to cause severe instability in the learning process \citet{tsitsiklis1996analysis}. While many variants of TD will provably converge despite the training instability, the quality of the solution at convergence is typically arbitrarily poor \citep{kolter2011fixed}. In the literature, there is a general belief that regularization can mitigate this instability, which is supported by basic analysis on the three standard examples.
 
-However, this is not true! In the second chapter, we introduce a series of new counterexamples that are resistant to regularization. We demonstrate the existence of ``vacuous'' examples, which never do better than the limiting case regardless of the amount of regularization. This problem persists in most TD-based algorithms, which covers a wide swath of the RL literature; we make our analysis concrete by showing how this example forces the error bounds derived by \citet{zhang2021breaking} to permit vacuous solutions. We further demonstrate that regularization is not monotonic in TD contexts, and that it is possible for regularization to increase error (or cause divergence) around some critical values. We extend these examples to the neural network case, and to Emphatic-TD to show that regularization is not a panacea for stability in TD learning.
+However, this is not true! In the second chapter, we introduce a series of new counterexamples that are resistant to regularization. We demonstrate the existence of ``vacuous'' examples, which never do better than the limiting case regardless of the amount of regularization. This problem persists in most TD-based algorithms, which covers a wide swath of the RL literature; we make our analysis concrete by showing how this example forces the error bounds derived by \citet{zhang2021breaking} to permit vacuous solutions. We further demonstrate that regularization is not monotonic in TD contexts, and that it is possible for regularization to increase error (or cause divergence) around some critical values. We extend these examples to the neural network case, showing that these effects are not limited to the linear case and making the case for greater care in regularization in practical RL applications. Finally, contemporary versions of Emphatic-TD generally use a reversed version of TD to estimate the resampling function, which opens them up to instability from the same source as the original TD. We show that these techniques are similarly vulnerable. We show that regularization is not a panacea for stability in TD learning.
+
 
 In the third chapter, we investigate new methods for stable TD learning that are resistant to off-policy divergence and that do not rely on regularization. Starting from previous work by \citet{kolter2011fixed}, we derive Projected Off-Policy TD, which reweighs TD updates to the closest distribution where the TD is non-expansive at the fixed point of its training. We learn the reweighing factors in-the-loop with vanilla TD methods (i.e. optimized as an augmented objective using stochastic gradient descent) and then apply those reweighing factors to each TD update. Crucially, this is distinct from contemporary work in the literature in that POP-TD does not resample to on-policy distribution, instead finding a ``safe'' distribution close to the data distribution. Applying this to a novel offline RL example, we can clearly demonstrate how POP-TD mitigates the \emph{distributional shift} between the dataset and the learned policy \cite{levine2020survey} while resampling as little as possible.
 

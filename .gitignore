@@ -1,7 +1,5 @@
+tikz/
 thesis.pdf
-
-stablefn/pendulum/*.png
-stablefn/**/*.pdf
 
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
