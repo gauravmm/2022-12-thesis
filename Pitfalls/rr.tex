@@ -1,4 +1,4 @@
-Temporal Difference (TD) learning is ubiquitous in reinforcement learning, where it is often combined with off-policy sampling and function approximation.  Unfortunately learning with this combination (known as the \emph{deadly triad}), exhibits instability and unbounded error.  To account for this, modern RL methods often implicitly (or sometimes explicitly) assume that regularization is sufficient to mitigate the problem in practice; indeed, the standard deadly triad examples from the literature can be ``fixed'' via proper regularization. In this paper, we introduce a series of new counterexamples to show that the instability and unbounded error of TD methods is \emph{not} solved by regularization. We demonstrate that, in the off-policy setting with linear function approximation, TD methods can fail to learn a non-trivial value function under \emph{any} amount of regularization; we further show that regularization can induce divergence under common conditions; and we show that one of the most promising methods to mitigate this divergence (Emphatic TD algorithms) may also diverge under regularization. We further demonstrate such divergence when using neural networks as function approximators.  Thus, we argue that regularization in TD methods needs to be reconsidered, given that it is insufficient to prevent divergence and may itself introduce instability. There needs to be much more care in the application of regularization to RL methods.
+Temporal Difference (TD) learning is ubiquitous in reinforcement learning, where it is often combined with off-policy sampling and function approximation.  Unfortunately, this combination  of conditions (the \emph{deadly triad}) often leads to unstable training and unbounded error.  Modern RL methods often implicitly assume that regularization is sufficient to mitigate the problem and the standard deadly triad examples from the literature are not able to refute this. In this chapter, we introduce a series of new counterexamples to show that this problem is not solved by regularization. We show that TD methods can fail to learn a non-trivial value function under \emph{any} amount of regularization, that regularization can itself induce divergence; and we show that one of the most promising mitigations (Emphatic-TD algorithms) may also diverge under regularization. We further demonstrate such divergence when using neural networks as function approximators.  Thus, we argue that there needs to be much more care in the application of regularization to RL methods.
 
 \emph{From ``The Pitfalls of Regularization in Off-Policy TD Learning'' by \citeauthor{manek2022pitfalls} (\citeyear{manek2022pitfalls})}
 
@@ -6,31 +6,30 @@ Temporal Difference (TD) learning is ubiquitous in reinforcement learning, where
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-Temporal Difference (TD) learning is a method for learning expected future-discounted quantities from Markov processes, using transition samples to iteratively improve estimates. This is most commonly used to estimate expected future-discounted rewards (the \emph{value function}) in Reinforcement Learning (RL). Advances in RL allow us to use powerful function approximators, and also to use sampling strategies other than naively following the Markov process (MP). When TD, function approximation, and off-policy training are all combined, learned functions exhibit severe instability and divergence, as classically observed by \citet{baird1993counterexample,tsitsiklis1996analysis}. This combination is known in the literature as the \emph{deadly triad}~\cite[pg.~264]{sutton2020reinforcement}, and while many contemporary variants of TD are designed to converge despite the instability, the quality of the solution at convergence may be arbitrarily poor.
+Temporal Difference (TD) learning is a method for learning expected future-discounted quantities from Markov processes, using transition samples to iteratively improve estimates. This is most commonly used to estimate expected future-discounted rewards (the \emph{value function}) in Reinforcement Learning (RL). Advances in RL allow us to use powerful function approximators, and also to use ``off-policy'' sampling strategies (i.e. which do not naively follow the underlying Markov process.) When TD, function approximation, and off-policy training are all combined, learned functions exhibit severe instability and divergence, as classically observed by \citet{baird1993counterexample,tsitsiklis1996analysis}. This combination is known in the literature as the \emph{deadly triad}~\cite[pg.~264]{sutton2020reinforcement}, and while many contemporary variants of TD are designed to converge despite the instability, the quality of the solution at convergence may be arbitrarily poor \cite{kolter2011fixed}.
 
-A common technique to avoid unbounded error is $\ell_2$ \emph{regularization}~\cite{tikhonov1943stability}, i.e.\ penalizing the squared norm of the weights in addition to the TD error.  This is generally understood to bound the worst-case error in exchange for biasing the model and potentially increasing the error everywhere else.  When used on three common examples of the deadly triad~\cite[pg.260]{kolter2011fixed,baird1993counterexample,sutton2020reinforcement}, regularization appears to mitigate the worst aspects of the divergence in practice.  Consequently, it has become an essential assumption made by many RL algorithms~\cite{diddigi2019convergent,mahadevan2014proximal,sutton2009fast,yu2017convergence,zhang2020provably,zhang2021breaking,kumar2022dr} and is seen as routine and innocuous.
+A common technique to avoid unbounded error is $\ell_2$ \emph{regularization}~\cite{tikhonov1943stability}, i.e.\ penalizing the squared norm of the weights in addition to the TD error.  This is generally understood to bound the worst-case error in exchange for biasing the model and potentially increasing the error everywhere else.  When used on three common examples of the deadly triad~\cite[pg.~260]{kolter2011fixed,baird1993counterexample,sutton2020reinforcement}, regularization appears to mitigate the worst aspects of the divergence in practice.  Consequently, it has become an essential assumption made by many RL algorithms~\cite{diddigi2019convergent,mahadevan2014proximal,sutton2009fast,yu2017convergence,zhang2020provably,zhang2021breaking,kumar2022dr} and is seen as routine and innocuous.
 
-We argue that this perspective on regularization in off-policy TD is fundamentally mistaken.  While regularization is indeed reasonably well-behaved and innocuous in classic fully-supervised contexts, the use of bootstrapping in TD means that even small amounts of model bias induced by regularization can cause divergence.  This is an oft-ignored phenomenon in the literature, and so we introduce a series of new counterexamples (summarized in Table~\ref{tab:summarytheorems}) to show how regularization can have counterintuitive and destructive effects in TD.  We show that vacuous solutions and training instability are \emph{not} solved by the use of regularization; that applying regularization can sometimes induce divergence and increase worst-case error; and that Emphatic TD algorithms---which are the most promising solution to this divergence---can themselves diverge when regularized. We finally also illustrate misbehaving regularization in the context of neural network value function approximation, demonstrating the general pitfalls of regularization possible in RL algorithms.  Regularization needs to be treated cautiously in the context of RL, as it behaves differently than in supervised settings.
+We argue that this perspective on regularization in off-policy TD is fundamentally mistaken.  While regularization is indeed well-behaved and innocuous in classic fully-supervised contexts, the use of bootstrapping in TD means that even small amounts of model bias induced by regularization can cause divergence.  This is an oft-ignored phenomenon in the literature, and so we introduce a series of new counterexamples (summarized in Table~\ref{tab:summarytheorems}) to show how regularization can have counterintuitive and destructive effects in TD.  We show that vacuous solutions and training instability are \emph{not} solved by the use of regularization; that applying regularization can sometimes induce divergence and increase worst-case error; and that Emphatic-TD based algorithms---which are the most promising way to correct stability from off-policy training---can themselves diverge when regularized. We finally also illustrate misbehaving regularization in the context of neural network value function approximation, demonstrating the general pitfalls of regularization possible in RL algorithms.  Regularization needs to be treated cautiously in the context of RL, as it behaves differently than in supervised settings.
 
 Our counterexamples demonstrate these core ideas:
 
 \paragraph{TD learning off-policy can be unstable and/or have unbounded error even when it converges.}
-Following well-established methods we show there is some off-policy distribution under which TD with linear value function approximation diverges \emph{and} learns a model with unbounded error (even if it were able to converge to the TD fixed point). This concisely demonstrates key features of the training error: the error is small when the distribution is close to on-policy, but the error diverges around specific off-policy distributions.  The intuition behind this, explained in Section~\ref{sec:introduce_example}, is that the off-policy\footnote{We consider a sampling distribution to be \emph{on-policy} if it follows the stationary distribution of the MP;  we do not explicitly consider a separate policy in this paper. } TD update involves a projection operation that depends on the sampling distribution and can be arbitrarily far away from the true value.  This basic fact has already been established by past work~\cite{baird1993counterexample,kolter2011fixed}, but our example is based upon a particular simple three-state MP, drawn in Figure~\ref{fig:mdp_illustration}.
+Following well-established methods we show there is some off-policy distribution under which TD with linear value function approximation diverges \emph{and} learns a model with unbounded error (even if it were able to converge to the TD fixed point). This concisely demonstrates key features of the training error: the error is small when the distribution is close to on-policy, but the error diverges around specific off-policy distributions.  The intuition behind this, explained in Section~\ref{sec:introduce_example}, is that the off-policy\footnote{We consider a sampling distribution to be \emph{on-policy} if it follows the stationary distribution of the MP and \emph{off-policy} otherwise;  we do not explicitly consider a separate policy in this chapter. } TD update involves a projection operation that depends on the sampling distribution and can be arbitrarily far away from the true value.  This basic fact has already been established by past work~\cite{baird1993counterexample,kolter2011fixed}, but our example is based upon a particular simple three-state MP, drawn in Figure~\ref{fig:mdp_illustration}.
 
 \paragraph{Regularization cannot always mitigate off-policy training error. }
-We next introduce regularization into our setting, and show how it changes the relationship between training error and off-policy training. As explained in Section~\ref{sec:introduce_ab}, we penalize the $\ell_2$-norm of learned (linear) weights with some coefficient $\eta$; as $\eta$ increases, the learned weights approach zero.  However, in \textbf{Example~\ref{ex:withrr}}, we show that there exists an off-policy distribution such that for any $\eta \geq 0 < \infty$, the regularized TD fixed point attains strictly higher approximation error than the zero solution (i.e., the infinitely regularized point).  We call such examples \emph{vacuous}. In other words, \emph{vacuous value functions never do better than guessing zero for all states, for any amount of regularization}.
+We next introduce regularization into our setting, and show how it changes the relationship between training error and off-policy training. As explained in Section~\ref{sec:introduce_ab}, we penalize the $\ell_2$-norm of learned (linear) weights with some coefficient $\eta$; as $\eta$ increases, the learned weights approach zero.  However, in \textbf{Example~\ref{ex:withrr}}, we show that there exists an off-policy distribution such that for any non-negative $\eta$, the regularized TD fixed point attains strictly higher approximation error than the zero solution (i.e., the infinitely regularized point).  We call such examples \emph{vacuous}. In other words, vacuous value functions never do better than guessing zero for all states, for any amount of regularization.
 
-We further analyze this vacuous example in the context of the algorithm in \citep{zhang2021breaking}. In this work, the authors assume the use of regularization to derive bounds on the learned error under off-policy sampling. Although these bounds are technically correct in the case of our counterexample, they are very loose, at about $2000$ times the threshold of vacuity.  This highlights the challenge of formally relying on regularization to bound model error.
+We further analyze this vacuous example in the context of the algorithm in \citep{zhang2021breaking}. In this work, the authors assume the use of regularization to derive bounds on the learned error under off-policy sampling. Although these bounds are technically correct in the case of our counterexample, they are very loose, at about $2000$ times the limit of vacuity.  This highlights the challenge of formally relying on regularization to bound model error, and illustrates the danger of relying on regularization in theoretical RL.
 
-\paragraph{Small amounts of regularization can cause model divergence or large errors. }
-There is a general implicit assumption in much ML literature that regularization monotonically shrinks learned weights. This intuition comes from classic fully-supervised machine learning where it typically holds. But because TD bootstraps value estimates (i.e.\ learns values using its own output), it is possible for small amounts of bias to be arbitrarily magnified. We dub this phenomenon ``small-eta error'' and illustrate it in \textbf{Example~\ref{ex:badeta}}. We relate this to the presence of negative eigenvalues in an intermediate step of the solution and % show how this causes models that are otherwise well-behaved to diverge around specific values of $\eta$.  
-show that, in some settings, the error of the TD solution may be relatively small when applied with no regularization but adding regularization causes the model to have worse error than the zero solution.
+\paragraph{Small amounts of regularization can cause model divergence. }
+There is a general implicit assumption in much ML literature that regularization monotonically shrinks learned weights and consequently the model output. This intuition comes from classic fully-supervised machine learning where it typically holds. But because TD bootstraps value estimates (i.e.\ learns values using its own output), the regularizer is composed arbitrarily often, and so it is possible for small amounts of bias to be arbitrarily magnified. We dub this phenomenon ``small-eta divergence'' and illustrate it in \textbf{Example~\ref{ex:badeta}}. We relate this to the presence of negative eigenvalues in an intermediate step of the solution and show that, in some settings, the error of the TD solution may be relatively small when applied with no regularization but adding regularization causes the model to have \emph{worse} error than the zero solution.
 
-One common solution to this problem is to lower-bound $\eta$ to guarantee that regularization behaves monotonically. However, we further show that such a lower bound may occur after the point of vacuity: a model that is not vacuous becomes vacuous for any regularization parameter above this lower bound. We also show that it is not always possible to select a single $\eta$ \emph{a priori}, with examples of mutually-incompatible off-policy distributions where there is no $\eta$ that achieves better than vacuous or nearly-vacuous results at different distributions.
+One common solution to this problem is to lower-bound $\eta$ to guarantee that regularization behaves monotonically. However, we further show that such a lower bound may restrict the model to a domain in which the model is vacuous. That is, a model that is not vacuous becomes vacuous when regularized with this lower bound. We also show that it is not always possible to select a single $\eta$ \emph{a priori}, with examples of mutually-incompatible off-policy distributions where there is no $\eta$ that achieves better than vacuous or nearly-vacuous results at different distributions.
 
 
 \paragraph{Emphatic-TD-based algorithms are vulnerable to instability from regularization.  }
-Emphatic-TD~\cite{sutton2016emphatic} fundamentally solves the problem of training off-policy by resampling TD updates so they appear to be on-policy.  This technique requires an emphasis model that decides how to scale each TD update, and learning this has been the key challenge preventing widespread adoption of Emphatic-TD.  A recent paper~\cite{zhang2020provably} proposed learning this emphasis model using ``reversed'' TD while simultaneously learning the value model using regular TD.  The resultant algorithm is called COF-PAC, and employs regularization to ensure that the two TD models eventually converge.
+Emphatic-TD~\cite{sutton2016emphatic} attempts to solve the problem of training off-policy by resampling TD updates so they appear to be on-policy.  This technique requires an emphasis model that decides how to scale each TD update, and learning this has been the key challenge preventing widespread adoption of Emphatic-TD.  A recent paper~\cite{zhang2020provably} proposed learning this emphasis model using ``reversed'' TD while simultaneously learning the value model using regular TD.  The resultant algorithm is called COF-PAC, and employs regularization to ensure that the two TD models eventually converge.
 
 We show that regularization, while necessary, can be harmful for such models in \textbf{Example~\ref{ex:emph}}. Specifically, we construct a model that converges to the correct solution without regularization but to an arbitrarily poor solution when regularized. The intuition behind this is that regularizing the emphasis model changes the effective distribution of the TD updates to the value model, which can cause the value model to have arbitrarily large error. We complete the example by showing that regularizing the value function separately does not restore performance.
 
@@ -45,7 +44,7 @@ So far most analysis of the deadly triad in the literature focuses on the linear
 		%    \midrule
 		\\  \textbf{Example~\ref{ex:withrr}} & There exist off-policy distributions under which TD learns a \emph{vacuous} model (one which---despite any amount of regularization---never does better than guessing zeros).
 		\\  \textbf{Example~\ref{ex:badeta}} & Small values of the regularization parameter $\eta$ can make TD diverge in models that otherwise converge. This is an unavoidable effect of bootstrapping in TD, and setting a lower-bound to exclude this may render models vacuous.
-		\\  \textbf{Example~\ref{ex:emph}} & Emphatic-TD-inspired algorithms are a promising way to reweigh samples and mitigate the effects of training off-policy. But if this reweighing is learned using TD, then using regularization can bias the emphasis model and cause the value model itself to diverge.
+		\\  \textbf{Example~\ref{ex:emph}} & Emphatic-TD-inspired algorithms are a promising way to reweigh samples and mitigate the effects of training off-policy. However, if this reweighing is learned using TD, then regularization can bias the emphasis model and cause the value model itself to diverge.
 		\\  \textbf{Example~\ref{ex:neuralnetwork}} & Training instability and increased error due to the deadly triad also occur when neural networks are used. We construct an empirical example and draw qualitative comparisons.
 		\\ \bottomrule \bottomrule
 	\end{tabular}
@@ -68,7 +67,7 @@ Consider the $n$-state Markov chain $(\mathcal S, P, R, \gamma)$, with state spa
 	\Phi w & = R + \gamma\,P\,\Phi w
 	\intertext{When $w$ is learned with TD, this equation is only valid if the TD updates are \emph{on-policy} (that is, they are distributed according to the steady-state probability of visiting each state, written as $\pi \in \mathbb R^n$). In the general case, where TD updates follow a (possibly) different distribution $\mu\in \mathbb R^n_0$, the TD solution is a fixed point of the Bellman operator followed by a projection~\cite{kolter2011fixed}:}
 	\Phi w & = \Pi_\mu \left( R + \gamma P \Phi w \right)
-	\intertext{where the matrix $\Pi_\mu = \Phi {(\Phi^\top D \Phi)}^{-1} \Phi^\top D$ projects the Bellman backup onto the column-space of $\Phi$, reweighed by the diagonal matrix $D = \text{diag}(\mu)$. This yields the closed-form solution:}
+	\intertext{where the matrix $\Pi_\mu = \Phi {(\Phi^\top D \Phi)}^{-1} \Phi^\top D$ projects the Bellman backup onto the column-space of $\Phi$, reweighed by the state-distribution matrix $D = \text{diag}(\mu)$. This yields the closed-form solution:}
 	w      & = A^{-1} \vec b
 \end{align}
 Where $A = \Phi^\top D (I - \gamma P) \Phi$ and $\vec b = \Phi^\top D R$. When this solution is subject to $\ell_2$ regularization, some non-negative $\eta$ is added to ensure the matrix being inverted is positive definite:
@@ -94,11 +93,11 @@ We first consider the unregularized ($\eta=0$) case, closely following the deriv
 \begin{align}
 	p = 0.102631 \qquad \lor \qquad p = 0.807255
 \end{align}
-$A^{-1}$ (and consequently the error) can be made arbitrarily large by selecting $p$ close to these values, which completes the introductory example. Now we look at the behavior of TD under regularization, which is the main contribution of this chapter.
+$A^{-1}$ (and consequently the TD error) can be made arbitrarily large by selecting $p$ close to these values, which completes the introductory example. Now we look at the behavior of TD under regularization, which is the main contribution of this chapter.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Regularization cannot always mitigate off-policy training error. }\label{sec:rrplotexplained}
+\subsection{Regularization cannot always mitigate the error from training off-policy. }\label{sec:rrplotexplained}
 There is a belief in the literature that regularization is a trade-off between reducing the blow-up of asymptotic errors and accurately learning the value function everywhere else~\cite{diddigi2019convergent,zhang2021breaking}.
 However, this belief does not accurately capture the nature of regularization: we show that it is possible to learn models that never perform better than always guessing zero despite any amount of regularization. That is, the TD error at all $\eta$ is at least as much as the error as $\eta\to\infty$. We call such models \emph{vacuous}.
 
@@ -110,10 +109,10 @@ However, this belief does not accurately capture the nature of regularization: w
 	\end{align}
 
 	\proof{} We use the same setting as in Section~\ref{sec:introduce_example}.
-	We observe that $\hat w = {[1, -1]}^\top$ minimizes the least-squares error $\|\Phi \hat w - V\|$, and further observe that a sufficient (but not necessary) condition for a solution to be vacuous is that $\hat w^\top w^*(\eta) \leq 0$. Solving:
+	We observe that $\hat w = {[1, -1]}^\top$ minimizes the least-squares error $\|\Phi \hat w - V\|$, and further observe that a sufficient condition for a solution to be vacuous is that $\hat w^\top w^*(\eta) \leq 0$. Solving:
 	\begin{align}
 		0= & ~ \hat w^\top w^*(\eta) =
-		\frac{\eta p-0.233 \eta-0.304 p^2+0.276 p-0.025}{\eta^2+1.44 \eta p+0.215 \eta-0.193 p^2+0.175 p-0.016}
+		\frac{\eta p-0.233 \eta-0.304 p^2+0.276 p-0.025}{\eta^2+1.44 \eta p+0.215 \eta-0.193 p^2+0.175 p-0.016} \label{eqn:geometryfoundation}
 		\\ & \implies p \in \{0.102636, \ldots\}
 	\end{align}
 	We verify that TD is vacuous at $p=0.102636$ by computing the TD error at convergence:
@@ -135,7 +134,7 @@ Similarly, we can trace the trajectory that the TD solution $w^*(\eta)$ takes as
 
 Intuitively, a sufficient condition for a solution to be vacuous is that it remains in the half-space that is tangent to and excludes the non-vacuous parameter ball. This is equivalent to finding some distribution $\mu$ such that $\hat w^\top w^*(\eta) \leq 0$ for all $\eta$, which we numerically solve to obtain the model in trajectory 1. From Figure~\ref{fig:gigeometry} we can see the trajectory remains in the half-space, and from Figure~\ref{fig:giplots} we can see that the error is never less than $\|V\|$. Trajectory 1 is a vacuous example.
 
-We observe that Example~\ref*{ex:withrr}, because it remains entirely in the half-space $\hat w^\top w^*(\eta) \leq 0$, could easily be generalized to other forms of regularization. We leave this for future work.
+We observe that Example~\ref*{ex:withrr}, because it remains entirely in the half-space $\hat w^\top w^*(\eta) \leq 0$, could easily be generalized to any form of convex regularization such as $\ell_1, \ell_2, \ell_\infty,$ etc. We leave this for future work.
 
 This intuition does not persist in the neural network case (discussed in Section~\ref{sec:multilayer}). In that case, the relationship between parameters and error does not admit a clean non-vacuous ball, but instead a deeply non-linear set of states. The resultant geometry does not admit a clean, intuitive, explanation.
 
@@ -162,7 +161,7 @@ This intuition does not persist in the neural network case (discussed in Section
 	\label{fig:fixedpointp}
 \end{figure}
 
-We present a second example where the error is stationary with respect to the regularization parameter. This is worse than Example~\ref{ex:withrr} because we are able to show that the point the model converges to is \emph{independent} of regularization. This example is the natural extension of that of \citet{kolter2011fixed}.
+We present a second example where the error is stationary with respect to the regularization parameter. This is worse than Example~\ref{ex:withrr} because we are able to show that the point the model converges to is \emph{independent} of regularization. This example is the natural three-state extension to the two-state counterexample by \citet{kolter2011fixed}.
 
 \proof We use the same setting as in Section~\ref{sec:introduce_example}, except the value function is $V = [1,~1,~1.05]^\top$ and basis $\Phi$ selected to have small representation error $\|\Pi_D V - V\| \leq \epsilon$:
 \begin{align}
@@ -171,7 +170,7 @@ We present a second example where the error is stationary with respect to the re
 		         0                              & -1                              \\
 		         \sfrac{1}{2} (1.05 + \epsilon) & -\sfrac{1}{2} (1.05 + \epsilon) \\
 	         \end{bmatrix} & \text{where $\epsilon > 0$}
-\end{align}.
+\end{align}
 We set $\epsilon = 10^{-4}$ and write down $w^*(\eta)$ in terms of $g$, a scalar function of $\eta$ and $p$:
 \begin{align}
 	w^*(\eta) & = (A+\eta I)^{-1} \vec b =
@@ -192,7 +191,7 @@ In this setting, when TD updates follow the sampling distribution $p\approx0.715
 
 We present this graphically in Figure~\ref{fig:fixedpointp}, where we plot the relationship between the off-policy distribution and the error at the TD fixed point. We plot the error with no regularization ($\eta=0$) and the limiting error ($\eta\to\infty$).
 
-We can see that the TD error intersects the $\eta\to\infty$ line immediately before and after the singularity. Our counterexample corresponds to the second root (that is, the intersection point at higher $p$.) This is because that corresponds to the stationary point between the asymptote that is crushed and the error on the right that increases. If our simpler derivation proved unsatisfying, we can also derive this counterexample using this fact:
+We can see that the TD error intersects the $\eta\to\infty$ line immediately before and after the singularity. Our counterexample corresponds to the second root (that is, the intersection point at higher $p$.) That corresponds to the stationary point between the asymptote that is crushed and the error on the right that increases. If our simpler derivation proved unsatisfying, we can also derive this counterexample using this fact:
 \begin{align}
 	0 & = \frac{d}{d \eta} \hat w^\top w^*(\eta)
 	= \frac{p(p - 0.715083)}{p(p - 0.714303)^2}
@@ -214,7 +213,7 @@ In light of our example we examine the work of~\cite{zhang2021breaking} in which
 \end{align}
 Their method bounds the error in our example by $2000*\|V\|$, which is tremendously loose.
 
-Analyzing the second example in~\ref{sec:withrr2}; starting from Equation~\ref{eqn:zhangbounds}:
+Analyzing the second example starting from Equation~\ref{eqn:zhangbounds}:
 \begin{align}
 	\|\Phi w^*(\eta) - V\| \leq b(\eta, \xi) & = \frac{1}{\xi} \left(\frac{\sigma_{\max}(\Phi)^2}{\sigma_{\min}(\Phi)^4 \sigma_{\min}(D)^{2.5}} \cdot \|V\|\eta + \| \Pi_D V - V \| \right)
 	\\ & = \sfrac{1}{\xi}\cdot(38.0\eta + 8.07\times 10^{-5})
@@ -224,13 +223,13 @@ Analyzing the second example in~\ref{sec:withrr2}; starting from Equation~\ref{e
 \end{align}
 Under our example, their method bounds the error at no more than $7.86*\|V\|$, which is a very loose bound that permits vacuous solutions. This illustrates the risk of trying to regularize away singularities, particularly in theoretical work.
 
-Investigating the cause of the loose bounds reveals that the presence of $\sigma_{\min}{(D)}^{2.5}$ in~\ref{eqn:zhangbounds} is largely responsible. As $D$ is a diagonal matrix encoding the sampling distribution, $\sigma_{\min}(D)$ is the smallest sampling rate of any state, and so the bound must be at least $\frac{\eta}{\xi n^{2.5}}$ for any perfectly representable $n$-state MP. Unfortunately, this appears to be fundamental limit caused by finding a linear bound to an error that scales non-linearly, and following their derivation in the appendix does not readily admit a way to improve this.
+Investigating the cause of the loose bounds reveals that the presence of $\sigma_{\min}{(D)}^{2.5}$ in~\ref{eqn:zhangbounds} is largely responsible. As $D$ is a diagonal matrix encoding the sampling distribution, $\sigma_{\min}(D)$ is the smallest sampling rate of any state, and so the bound must be at least $\frac{\eta}{\xi n^{2.5}}$ for any perfectly representable $n$-state MP. Unfortunately, this appears to be fundamental limit caused by finding a linear bound to an error that scales non-linearly, and following their derivation does not readily admit a way to improve this.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Small amounts of regularization can cause large increases in training error. }
 
-There is a general assumption in the literature that $\ell_2$ regularization monotonically shrinks the learned weights. While this is true in classification, regression, and other non-bootstrapping contexts, this is not true in TD. Because TD bootstraps values, it is possible for model bias to be arbitrarily magnified.
+There is a general assumption in the literature that $\ell_2$ regularization monotonically shrinks the learned weights. While this is true in classification, regression, and other non-bootstrapping contexts, this is not true in TD. Because TD bootstraps values, it composes the regularization over itself arbitrarily deep, and so model bias may be arbitrarily magnified.
 
 This can be understood in terms of the eigenvalues of the matrix $A$ in Equation~\ref{eqn:wstar}. By increasing values along the diagonal, $\ell_2$ regularization increases eigenvalues of the matrix $(A + \eta I)$ to ensure it is positive definite. Under off-policy distributions, it is possible for $A$ to have eigenvalues that are negative or zero. This implies that there are $\eta$ for which $\det(A+\eta I) = 0$, and selecting $\eta$ close to these values allows us to achieve arbitrarily high error. We show one such case in Example~\ref{ex:badeta}. This is not merely theoretical--we demonstrate this in the neural network case in Section~\ref{sec:multilayer}.
 
@@ -243,7 +242,7 @@ This can be understood in terms of the eigenvalues of the matrix $A$ in Equation
 		0 & = \det(A+\eta I) = \eta^2 + 5.45\times 10^{-2} \eta - 7.47\times 10^{-3}
 		\quad\implies\quad  \eta = 0.0634
 	\end{align}
-	As in the introductory example, the error can be made arbitrarily large by setting $\eta\approx 0.0634$.
+	As in the introductory example, the error grows arbitrarily large as $\eta\to 0.0634$.
 	\qed{}
 \end{example}
 
@@ -254,12 +253,14 @@ The same analysis is repeated for our second example in~\ref{sec:withrr2}. We se
 	0 & = 100\eta^2+47.4p\eta +1.85\eta - 1.30p^2 + 0.927p
 	\\  \eta & = 0.00482577 \quad \lor \quad \eta = -0.45
 \end{align}
-Note that the denominator of $g(p,\eta)$ is proportional to $\det(A+\eta I)$, and so $g(0.9,\eta)$--and the error at the TD fixed point--can be made arbitrarily large by selecting $\eta$ close to $4.83\times 10^{-3}$. As this is the only positive root, the model does not diverge at other values.\qed{}
+Note that the denominator of $g(p,\eta)$ is proportional to $\det(A+\eta I)$, and so $g(0.9,\eta)$ and the error at the TD fixed point can be made arbitrarily large by selecting $\eta$ close to $4.83\times 10^{-3}$. As this is the only positive root, the model does not diverge at other values.\qed{}
 
 This small-$\eta$ divergence effect can appear in several ways, illustrated in Figure~\ref{fig:etagraph}. Typically, this appears as one or more points at which TD error diverges before the region at which regularization reduces the model error below $\|V\|$. The first and second plot in Figure~\ref{fig:etagraph} show two such cases, where the error increases sharply at two and one points respectively.
 
+\paragraph{``Nearly'' PSD assumption.}
 In the literature, it is commonly assumed that $A$ is ``nearly'' positive definite, where only a few eigenvalues are non-positive, and those are close to zero. This gives rise to the common mitigation of setting a lower-bound $\eta_0$ such that $(A+\eta I)$ is positive definite for $\eta>\eta_0$. This may render an otherwise well-behaved model vacuous. The third plot in Figure~\ref{fig:etagraph} illustrates this: the model is not vacuous when unregularized, but is vacuous in the domain $\eta > 10^{-2}$ where divergence is prohibited.
 
+\paragraph{The problem of a fixed $\eta$.}
 A common practice in the literature is to set $\eta$ before training, without regard for the sampling distribution. This is ill advised, as the value may be under- or over-regularizing depending on the sampling distribution. One such example is illustrated in Figure~\ref{fig:mismatchedeta}, where selecting an $\eta$ that minimizes the error for one distribution will lead to vacuous or nearly-vacuous results in the other two. A second example in Figure~\ref{fig:giplots} has no single $\eta$ for which trajectories 2 and 3 are both non-vacuous. This is especially relevant as regularization is commonly used to permit distribution drift during training, as discussed in Section~\ref{sec:relatedwork}. If the training distribution changes while $\eta$ is fixed, then algorithms that can be proven to converge to good solutions under some original distribution may converge to poor solutions as the distribution drifts.
 
 \begin{figure}
@@ -281,7 +282,7 @@ A common practice in the literature is to set $\eta$ before training, without re
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Emphatic approaches and our counterexample}\label{sec:emphatictd}
-Emphatic-TD eliminates instability from off-policy sampling by reweighing incoming data (via an importance function) so it appears to be on-policy. There is considerable interest in making this more practical, especially by learning the importance and value models simultaneously. A leading example of this work is COF-PAC~\cite{zhang2020provably}, which uses $\ell_2$-regularized versions of GTD2~\cite{sutton2009fast} to learn both the value and emphasis models. The authors rely on regularization, particularly because the target policy changes during learning. This makes COF-PAC vulnerable to regularization-caused error. We illustrate this with Example~\ref{ex:emph} in which COF-PAC learns correctly when unregularized, but has large error when regularized.
+Emphatic-TD eliminates instability from off-policy sampling by reweighing incoming data so it appears to be on-policy. There is considerable interest in making this more practical, especially by learning the importance and value models simultaneously. A leading example of this work is COF-PAC~\cite{zhang2020provably}, which uses $\ell_2$-regularized versions of GTD2~\cite{sutton2009fast} to learn both the value and emphasis models. The authors rely on regularization, particularly because the target policy changes during learning. This makes COF-PAC vulnerable to regularization-caused error. We illustrate this with Example~\ref{ex:emph} in which COF-PAC learns correctly when unregularized, but has large error when regularized.
 
 
 \begin{figure}
@@ -293,17 +294,17 @@ Emphatic-TD eliminates instability from off-policy sampling by reweighing incomi
 
 \begin{figure}
 	\input{Pitfalls/emphasistd/emphasistd.tex}
-	\caption{Regularization distorts the emphasis model (left), which induces the value function (right) to move to a singularity. Unregularized models are shown in red, regularized models in blue. Regularization can interact with emphasis models to significantly worsen learned value functions. }\label{fig:emphasisplots}
+	\caption{Regularization distorts the emphasis model (above), which induces the value function (below) to move to a singularity. Unregularized models are shown in green, regularized models in purple. Regularization can interact with emphasis models to significantly worsen learned value functions. }\label{fig:emphasisplots}
 \end{figure}
 
 
 \begin{example}\label{ex:emph}
-	COF-PAC may learn the value function with low error when unregularized, but with arbitrarily high error when regularized.
+	Even if unregularized COF-PAC learns the value function with low error, regularizing it may induce arbitrarily large errror.
 
-	\proof Conceptually, COF-PAC maintains two separate models that are each updated by TD: the emphasis and the value models. This emphasis model is used to reweigh TD updates to the value function so they appear to come from the on-policy distribution. Our strategy is to first show how regularization biases the emphasis model, and then how this bias causes the value model to diverge.
+	\proof Conceptually, COF-PAC maintains two separate models that are each updated by TD: the emphasis and the value models. This emphasis model is used to reweigh TD updates so they appear to come from the on-policy distribution. Our strategy is to first show how regularization biases the emphasis model and then how this bias causes the value model to diverge.
 	We begin with our three-state MP, noting its on-policy distribution is $\pi=[.25~.25,~.5]$. We wish to learn the values using COF-PAC while sampling off-policy at $\mu=[.2~.2~.6]$.
 
-	Now we introduce a key conceptual tool: $\upsilon(\eta_m)$, which is the effective distribution seen by the TD-updates, influenced by the emphasis regularization parameter $\eta_m$. Unregularized, COF-PAC is able to resample off-policy updates to the on-policy distribution:  $\upsilon(0) \equiv \pi$. If the model is regularized, then the effective distribution moves away from $\pi$. Figure~\ref{fig:emphimpetam} illustrates the distance between $\upsilon(\eta_m)$ and $\pi$ as the regularization parameter increases.
+	Now we introduce a key conceptual tool: $\upsilon(\eta_m)$, which is the effective distribution seen by the TD-updates, as a function of the emphasis regularization parameter $\eta_m$. Unregularized, COF-PAC is able to resample off-policy updates to the on-policy distribution:  $\upsilon(0) \equiv \pi$. If the model is regularized, then the effective distribution moves away from $\pi$. Figure~\ref{fig:emphimpetam} illustrates the distance between $\upsilon(\eta_m)$ and $\pi$ as the regularization parameter increases.
 
 	We can use the effective distribution to compute the error in the value model. Plotting the relationship between the value function error and $\eta_m$ in Figure~\ref{fig:emphvaletam}, we can see the value function has asymptotic error around $\eta_m=2\times 10^{-4}$. This shows how COF-PAC may diverge with specific regularization.
 
@@ -312,7 +313,7 @@ Emphatic-TD eliminates instability from off-policy sampling by reweighing incomi
 
 \paragraph{Mathematical details of example. } We use an MP with the same transition function as in Figure~\ref{fig:mdp_illustration}, with separate bases $\Phi_m$ and $\Phi_v$ for the emphasis and value stages respectively. We assume that our interest in all states is uniformly $i=1$.
 
-We begin by setting the off-policy sampling distribution of $\mu=[.2~.2~.6]$, used as the diagonal matrix $D_\mu=\text{diag}(\mu)$. Thanks to the simple structure of our example, we know the emphasis is $m = \frac{i}{1-\gamma} \cdot \pi D_\mu^{-1} \propto \left(\sfrac{5}{4}, \sfrac{5}{4}, \sfrac{5}{6}\right)$. We select a basis that allows us to represent this emphasis:
+We begin by setting the off-policy sampling distribution of $\mu=[.2~.2~.6]$, used as the diagonal matrix $D_\mu=\text{diag}(\mu)$. Thanks to the simple structure of our example, we can directly compute the emphasis as $m = \frac{i}{1-\gamma} \cdot \pi D_\mu^{-1} \propto \left(\sfrac{5}{4}, \sfrac{5}{4}, \sfrac{5}{6}\right)$. We select a basis that allows us to represent this:
 \begin{align}
 	\Phi_m                                           & = \begin{bmatrix}\sfrac{5}{4} & 0 \\ 0 & -\sfrac{1}{100}\cdot\sfrac{5}{4} \\ \sfrac{5}{12} & -\sfrac{1}{100}\cdot\sfrac{5}{12} \end{bmatrix}
 	\intertext{We deliberately choose $\Phi_m$ to have a poor condition number for reasons that will become apparent later. We can represent $c \cdot \left(\sfrac{5}{4}, \sfrac{5}{4}, \sfrac{5}{6}\right)$ exactly for any constant $c$:}

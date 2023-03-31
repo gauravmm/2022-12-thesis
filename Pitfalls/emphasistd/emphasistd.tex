@@ -12,22 +12,22 @@
         enlargelimits=false,
         mark=none,
         ymax=1.5,
-        xlabel={distrib. param. $p$},
+        xlabel={distrib. param. $h_e$},
         ylabel={distrib. err. $\|\upsilon(\eta) - \pi\|$},
         yticklabels={,,},
         ylabel style={yshift = -9pt,},
       ]
-      \addplot[color=red,very thick] table [x=p, y=err] {Pitfalls/emphasistd/file_2a0.dat} node[above,pos=0.017] {$\eta=0$};
+      \addplot[color=viridis03,very thick] table [x=p, y=err] {Pitfalls/emphasistd/file_2a0.dat} node[above,pos=0.017] {$\eta=0$};
       %\addplot[color=black,dashed] table [x=p, y=err] {Pitfalls/emphasistd/file_2a100..dat} node[above,pos=0.85] {$\eta\to\infty$};
-      \addplot[color=blue,very thick] table [x=p, y=err] {Pitfalls/emphasistd/file_2a0.0002.dat} node[below,pos=0.2] {$\eta=2\cdot 10^{-4}$};
+      \addplot[color=viridis09,very thick] table [x=p, y=err] {Pitfalls/emphasistd/file_2a0.0002.dat} node[below,pos=0.2] {$\eta=2\cdot 10^{-4}$};
       % Annotation:
-      \addplot[color=red,only marks,mark=o,mark size=6pt] coordinates {(0.4,0)};
-      \addplot[color=blue,only marks,mark=o,mark size=6pt] coordinates {(0.4,0.6123)};
+      \addplot[color=viridis03,only marks,mark=o,mark size=6pt] coordinates {(0.4,0)};
+      \addplot[color=viridis09,only marks,mark=o,mark size=6pt] coordinates {(0.4,0.6123)};
       \draw[->,black,very thick,shorten >=6pt,shorten <=6pt] (0.4, 0) to [bend right] (0.4, 0.6123);
       \node[anchor=west] at (axis cs:0.45, .3) {With Regularization };
     \end{axis}
   \end{tikzpicture}
-  \caption{distribution is $[\sfrac p2,~\sfrac p2,~(1-p)]$ }
+  \caption{distribution is $[\sfrac {h_m}2,~\sfrac {h_m}2,~(1-h_m)]$ }
   \label{fig:emphimp}
 \end{subfigure}
 \begin{subfigure}[b]{0.8\columnwidth}
@@ -43,29 +43,29 @@
         enlargelimits=false,
         mark=none,
         ymax=0.005,
-        xlabel={distrib. param. $q$},
+        xlabel={distrib. param. $h_v$},
         ylabel={value err. $\|\Phi_v w_v^* - V\|$},
         yticklabels={,,},
         ylabel style={yshift = -9pt,},
         scaled y ticks = false,
       ]
       \addplot[color=black] table [x=p, y=err] {Pitfalls/emphasistd/file_2b0.dat} node[below right,pos=0.7] {$\eta=0$};
-      \draw[red,very thick] (0.5, 0.00086458) -- (0.5, 0.00086458|-{rel axis cs:0,0});
-      \draw[red,dashed,very thick] (0.5, 0.005) -- (0.5, 0.005|-{rel axis cs:0,0});
-      \draw[blue,very thick] (0.12, 0.005) -- (0.12, 0.005|-{rel axis cs:0,0});
+      \draw[viridis03,very thick] (0.5, 0.00086458) -- (0.5, 0.00086458|-{rel axis cs:0,0});
+      \draw[viridis03,dashed,very thick] (0.5, 0.005) -- (0.5, 0.005|-{rel axis cs:0,0});
+      \draw[viridis09,very thick] (0.12, 0.005) -- (0.12, 0.005|-{rel axis cs:0,0});
 
       % Annotation:
-      \addplot[color=red,only marks,mark=o,mark size=6pt] coordinates {(0.5,0.00086458)};
-      \node[color=red,anchor=north,rotate=90] at (axis cs:0.5, 0.0015) {$\upsilon(0)$};
+      \addplot[color=viridis03,only marks,mark=o,mark size=6pt] coordinates {(0.5,0.00086458)};
+      \node[color=viridis03,anchor=north,rotate=90] at (axis cs:0.5, 0.0025) {$\upsilon(0)$};
 
-      \addplot[color=blue,only marks,mark=o,mark size=6pt] coordinates {(0.12,0.005)};
-      \node[color=blue,anchor=north,rotate=90] at (axis cs:0.12, 0.0015) {$\upsilon(2\cdot 10^{-4})$};
+      \addplot[color=viridis09,only marks,mark=o,mark size=6pt] coordinates {(0.12,0.005)};
+      \node[color=viridis09,anchor=north,rotate=90] at (axis cs:0.12, 0.0015) {$\upsilon(2\cdot 10^{-4})$};
 
       \draw[->,black,very thick,shorten >=12pt,shorten <=6pt,bend left=10] (0.5, 0.00086458) to [] (0.12, 0.005);
       \node[anchor=west] at (axis cs:0.24, .003) {With Regularization };
 
     \end{axis}
   \end{tikzpicture}
-  \caption{distribution is $[\sfrac {(1-q)}2,~\sfrac q2,~0.5]$ }
+  \caption{distribution is $[\sfrac {(1-h_v)}2,~\sfrac {h_v}2,~0.5]$ }
   \label{fig:emphval}
 \end{subfigure}
