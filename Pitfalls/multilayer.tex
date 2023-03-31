@@ -1,73 +1,73 @@
 \centering
 \tikzset{fit margins/.style={/tikz/afit/.cd,#1,
-    /tikz/.cd,
-    inner xsep=\pgfkeysvalueof{/tikz/afit/left}+\pgfkeysvalueof{/tikz/afit/right},
-    inner ysep=\pgfkeysvalueof{/tikz/afit/top}+\pgfkeysvalueof{/tikz/afit/bottom},
-    xshift=-\pgfkeysvalueof{/tikz/afit/left}+\pgfkeysvalueof{/tikz/afit/right},
-    yshift=-\pgfkeysvalueof{/tikz/afit/bottom}+\pgfkeysvalueof{/tikz/afit/top}},
+            /tikz/.cd,
+            inner xsep=\pgfkeysvalueof{/tikz/afit/left}+\pgfkeysvalueof{/tikz/afit/right},
+            inner ysep=\pgfkeysvalueof{/tikz/afit/top}+\pgfkeysvalueof{/tikz/afit/bottom},
+            xshift=-\pgfkeysvalueof{/tikz/afit/left}+\pgfkeysvalueof{/tikz/afit/right},
+            yshift=-\pgfkeysvalueof{/tikz/afit/bottom}+\pgfkeysvalueof{/tikz/afit/top}},
     afit/.cd,left/.initial=2pt,right/.initial=2pt,bottom/.initial=2pt,top/.initial=2pt}
 
-\begin{tikzpicture}[->,shorten >=1pt, node distance={24mm}, main/.style = {draw, circle}] 
-\node[main] (3) {$s_{3,1}$};
-\node[main] (1) [below left of=3] {$s_{1,1}$};
-\node[main] (2) [below right of=3]{$s_{2,1}$};
+\begin{tikzpicture}[->,shorten >=1pt, node distance={24mm}, main/.style = {draw, circle}]
+    \node[main] (3) {$s_{3,1}$};
+    \node[main] (1) [below left of=3] {$s_{1,1}$};
+    \node[main] (2) [below right of=3]{$s_{2,1}$};
 
-\node[main] (11) [above left=0mm and 6mm of 1] {};
-\node[main] (12) [below left=0mm and 6mm of 1] {};
-\node[main] (21) [above right=0mm and 6mm of 2] {};
-\node[main] (22) [below right=0mm and 6mm of 2] {};
-\node[main] (31) [above left=6mm and 0mm of 3] {};
-\node[main] (32) [above right=6mm and 0mm of 3] {};
+    \node[main] (11) [above left=0mm and 6mm of 1] {};
+    \node[main] (12) [below left=0mm and 6mm of 1] {};
+    \node[main] (21) [above right=0mm and 6mm of 2] {};
+    \node[main] (22) [below right=0mm and 6mm of 2] {};
+    \node[main] (31) [above left=6mm and 0mm of 3] {};
+    \node[main] (32) [above right=6mm and 0mm of 3] {};
 
 
-\path
-(1) edge[bend left=-30] node[above] {\sfrac 1 4} (2)
+    \path
+    (1) edge[bend left=-30] node[above] {\sfrac 1 4} (2)
     edge[bend right=-10] node[below right] {\sfrac 1 2} (3);
-\path
-(2) edge[bend left=40] node[below] {\sfrac 1 4} (1)
+    \path
+    (2) edge[bend left=40] node[below] {\sfrac 1 4} (1)
     edge[bend left=-10] node[below left] {\sfrac 1 2} (3);
 
-\path
-(3) edge[bend left=20] node[above right] {\sfrac 1 4} (2)
+    \path
+    (3) edge[bend left=20] node[above right] {\sfrac 1 4} (2)
     edge[bend right=20] node[above left] {\sfrac 1 4} (1);
 
-\path (1)  edge[bend left=-10] (11) edge[bend right=-10] (12);
-\path (11) edge[bend left=-10] (1)  edge[bend left=-10] (12);
-\path (12) edge[bend right=-10] (1)  edge[bend left=-10] (11);
-\path (11) edge[out=110,in=150,looseness=8] (11);
-\path (12) edge[out=250,in=210,looseness=8] (12);
-\path (1) edge[out=185,in=175,looseness=10] (1);
+    \path (1)  edge[bend left=-10] (11) edge[bend right=-10] (12);
+    \path (11) edge[bend left=-10] (1)  edge[bend left=-10] (12);
+    \path (12) edge[bend right=-10] (1)  edge[bend left=-10] (11);
+    \path (11) edge[out=110,in=150,looseness=8] (11);
+    \path (12) edge[out=250,in=210,looseness=8] (12);
+    \path (1) edge[out=185,in=175,looseness=10] (1);
 
-\path (2)  edge[bend right=-10] (21) edge[bend left=-10] (22);
-\path (21) edge[bend right=-10] (2)  edge[bend left=-10] (22);
-\path (22) edge[bend left=-10] (2)  edge[bend left=-10] (21);
-\path (21) edge[out=70,in=30,looseness=8] (21);
-\path (22) edge[out=290,in=330,looseness=8] (22);
-\path (2) edge[out=5,in=355,looseness=10] (2);
+    \path (2)  edge[bend right=-10] (21) edge[bend left=-10] (22);
+    \path (21) edge[bend right=-10] (2)  edge[bend left=-10] (22);
+    \path (22) edge[bend left=-10] (2)  edge[bend left=-10] (21);
+    \path (21) edge[out=70,in=30,looseness=8] (21);
+    \path (22) edge[out=290,in=330,looseness=8] (22);
+    \path (2) edge[out=5,in=355,looseness=10] (2);
 
-\path (3)  edge[bend right=-10] (31) edge[bend left=-10] (32);
-\path (31) edge[bend right=-10] (3)  edge[bend left=-10] (32);
-\path (32) edge[bend left=-10] (3)  edge[bend left=-10] (31);
-\path (31) edge[out=150,in=110,looseness=8] (31);
-\path (32) edge[out=30,in=70,looseness=8] (32);
-\path (3) edge[out=95,in=85,looseness=10] (3);
+    \path (3)  edge[bend right=-10] (31) edge[bend left=-10] (32);
+    \path (31) edge[bend right=-10] (3)  edge[bend left=-10] (32);
+    \path (32) edge[bend left=-10] (3)  edge[bend left=-10] (31);
+    \path (31) edge[out=150,in=110,looseness=8] (31);
+    \path (32) edge[out=30,in=70,looseness=8] (32);
+    \path (3) edge[out=95,in=85,looseness=10] (3);
 
-\draw[dotted,fill=yellow,fill opacity=0.1] (1.4,-2.0) rectangle (2.4,-0.15);
+    \draw[dotted,fill=yellow,fill opacity=0.1] (1.0,-2.8) rectangle (3.4,-0.6);
 
-\node[main] (B21) [above right=0.1cm and 2.2cm of 2] {$s_{2,1}$};
-\node[main] (B22) [above right=0.2cm and 1.0cm of B21] {$s_{2,2}$};
-\node[main] (B23) [below right=0.2cm and 1.0cm of B21] {$s_{2,3}$};
-\path (B21) edge[bend right=-10] node[above] {\sfrac e 3} (B22)
-            edge[bend left=-10] node[below] {\sfrac e 3} (B23);
-\path (B22) edge[bend right=-10] (B21)  edge[bend left=-10] (B23);
-\path (B23) edge[bend left=-10] (B21)  edge[bend left=-10] (B22);
-\path (B22) edge[out=40,in=0,looseness=4] (B22);
-\path (B23) edge[out=320,in=0,looseness=4] (B23);
-\path (B21) edge[out=5,in=355,looseness=10] node[right] {\sfrac e 3} (B21);
+    \node[main] (B21) [above right=0.1cm and 2.2cm of 2] {$s_{2,1}$};
+    \node[main] (B22) [above right=0.2cm and 1.0cm of B21] {$s_{2,2}$};
+    \node[main] (B23) [below right=0.2cm and 1.0cm of B21] {$s_{2,3}$};
+    \path (B21) edge[bend right=-10] node[above] {\sfrac e 3} (B22)
+    edge[bend left=-10] node[below] {\sfrac e 3} (B23);
+    \path (B22) edge[bend right=-10] (B21)  edge[bend left=-10] (B23);
+    \path (B23) edge[bend left=-10] (B21)  edge[bend left=-10] (B22);
+    \path (B22) edge[out=40,in=0,looseness=4] (B22);
+    \path (B23) edge[out=320,in=0,looseness=4] (B23);
+    \path (B21) edge[out=5,in=355,looseness=10] node[right] {\sfrac e 3} (B21);
 
-\node[draw,dotted,fill=yellow,fill opacity=0.1,fit={(B21) (B22) (B23)},fit margins={left=3pt,right=9pt,bottom=3pt,top=3pt},] (fit) {};
+    \node[draw,dotted,fill=yellow,fill opacity=0.1,fit={(B21) (B22) (B23)},fit margins={left=3pt,right=9pt,bottom=3pt,top=3pt},] (fit) {};
 
-\path (2.4,-0.15) edge[-,dotted] (fit.north west);
-\path (2.4,-2.) edge[-,dotted] (fit.south west);
+    \path (3.4,-0.6) edge[-,dotted] (fit.north west);
+    \path (3.4,-2.8) edge[-,dotted] (fit.south west);
 \end{tikzpicture}
 
