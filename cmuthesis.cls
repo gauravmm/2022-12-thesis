@@ -68,6 +68,7 @@
   \vskip 3em
 
   \begin{center}
+    Computer Science Department \\
     School of Computer Science \\
     Carnegie Mellon University \\
     Pittsburgh, PA 15213

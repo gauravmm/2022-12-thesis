@@ -96,8 +96,8 @@
 \pagestyle{empty}
 
 \title{
-	{\bf Stable Models and Temporal Difference Learning }}
-\author{Gaurav Manek}
+	{\bf Stable Models and \\ Temporal Difference Learning }}
+\author{{\bf Gaurav Manek}}
 \date{March 2023}
 \Year{2023}
 \trnumber{CMU-CS-23-103}
@@ -106,12 +106,12 @@
 	J. Zico Kolter, Chair \\
 	David Held \\
 	Deepak Pathak \\
-	Sergey Levine (Berkeley)
+	Sergey Levine (UC Berkeley)
 }
 
-\support{This research was sponsored by A*STAR Graduate Academy, Robert Bosch GmbH, and the NSS Fellowship. }
+\support{This research was sponsored by A*STAR Graduate Academy and Robert Bosch GmbH }
 \disclaimer{The views and conclusions contained in this document are those of the author and should not be interpreted as representing the official policies, either expressed or implied, of any sponsoring institution, the U.S. government or any other entity. }
-\keywords{Lyapunov Stability, Regularization, Deadly Triad, Offline Reinforcement Learning, Temporal Difference Learning, Reinforcement Learning, Neural Networks, Machine Learning Theory}
+\keywords{Lyapunov Stability, Regularization, Deadly Triad, Offline Reinforcement Learning, Temporal Difference Learning, Reinforcement Learning, Neural Networks, Machine Learning, Artificial Intelligence}
 
 \maketitle
 
@@ -121,11 +121,11 @@
 
 
 \begin{abstract}
-	In this thesis, we investigate two different aspects of stability: the stability of neural network dynamics models and the stability of reinforcement learning algorithms. In the first chapter, we propose a new method for learning Lyapunov-stable dynamical models that is stable by construction, even when randomly initialized. We demonstrate the effectiveness of this method on damped multi-link pendulums and show how it can be used to generate high-fidelity video textures.
+	In this thesis, we investigate two different aspects of stability: the stability of neural network dynamics models and the stability of reinforcement learning algorithms. In the first chapter, we propose a new method for learning Lyapunov-stable dynamics models that are stable by construction, even when randomly initialized. We demonstrate the effectiveness of this method on damped multi-link pendulums and show how it can be used to generate high-fidelity video textures.
 
-	In the second and third chapters, we focus on stability issues in reinforcement learning. In the second chapter, we demonstrate that regularization, a common approach to addressing instability in temporal difference (TD) learning, is not always effective. We show that TD learning can diverge even when regularization is used and demonstrate this phenomenon in standard examples as well as a novel problem we construct.
+	In the second and third chapters, we focus on the stability of Reinforcement Learning (RL). In the second chapter, we demonstrate that regularization, a common approach to addressing instability, behaves counterintuitively in RL settings. Not only is it sometimes ineffective, but it can also cause instability. We demonstrate this phenomenon in both linear and neural network settings. Further, stadard resampling methods are vulnerable to the same
 
-	In the third chapter, we propose a new resampling strategy called Projected Off-Policy TD (POP-TD), which resamples TD updates to come from a convex subset of ``safe'' distributions. Unlike existing resampling methods, it need not converge to the on-policy distribution. We show how this approach can mitigate the distribution shift problem in offline RL on a task designed to maximize such shift.
+	In the third chapter, we propose a mechanism to stabilize off-policy RL through resampling. Called Projected Off-Policy TD (POP-TD), it resamples TD updates to come from a convex subset of ``safe'' distributions instead of (as in other resampling methods) resampling to the on-policy distribution. We show how this approach can mitigate the distribution shift problem in offline RL on a task designed to maximize such shift.
 
 	Overall, this thesis advances novel methods for dynamics model stability and training stability in reinforcement learning, questions existing assumptions in the field, and points to promising directions for stability in model and reinforcement learning.
 \end{abstract}
@@ -141,14 +141,14 @@
 
 	I would like to express my sincere appreciation to my collaborators on the POP-TD project, whose involvement has made this project possible. Melrose Roderick for his insight, good humor, and tenacity. I would also like to thank Felix Berkenkamp for his time, patience, and persistence.
 
-	I also owe a debt of gratitude to Francisco Maturana, my roommate of six years and colleague in the CS department. His willingness to engage in productive discussion has been instrumental in helping me to maintain balance and perspective, and I am truly thankful for his friendship.
+	I also owe a debt of gratitude to Francisco Maturana, my roommate of six years and colleague in the CS department. His willingness to argue \emph{sociare sine deo} has been instrumental in keeping my powder dry and arguments pithy. I am truly thankful for his friendship.
 
 	From the department, I wish to thank Ruben Martins for engaging with my fledgeling ideas in his field. Also, the support staff who make the department what it is: Catherine Copetas, Deb Cavlovich, Ann Stetser, Charlotte Yano, and the many, many others.
 	\clearpage
 
 	From A*STAR, I wish to thank the many people in the past and present who have molded me as researchers and supported me through my PhD, especially Vijay Chandrasekhar and Li Xiaoli. I also wish to thank the many senior researchers who have invested their time in me, and the dedicated scholarship officers who have supported me for a decade. From my undergraduate years in Brown I need to thank Shriram Krishnamurthi and Stefanie Tellex for starting me down this journey.
 
-	And most of all, I would like to express my heartfelt thanks to my family for their unwavering love, encouragement, and support throughout the highs and lows of my academic journey. Their steadfast presence, undying love, and unwavering support have been the foundation upon which I have built my academic success, and I am forever indebted to them.
+	And most of all, I would like to express my heartfelt thanks to my parents Mukesh and Sonal Manek, my brother Gautam Manek, and my extended family for their unwavering love, encouragement, and support throughout the highs and lows of my academic journey. Their steadfast presence, undying love, and unwavering support have been the foundation upon which I have built my academic success, and I am forever indebted to them.
 \end{acknowledgments}
 
 \cleardoublepage
@@ -161,21 +161,17 @@
 
 \chapter{Introduction}
 
-In this thesis we examine two notions of stability: the predictions of neural network dynamics models and the training of reinforcement learning algorithms. The transition from the first notion of stability to the second is natural: the parameters of a stably trained model circumscribes, in parameter-space, a stable trajectory.
-This relationship between stabilities has significant precedence in the foundational work of Temporal Difference (TD) learning theory \cite{tsitsiklis1996analysis}. % The goal for the work in this thesis was to relate these two stabilities, designing new RL algorithms with favorable stability properties.
-% Instead, a major section of this thesis is devoted to demonstrating that the stability of TD learning is not as well understood as previously thought.
+In this thesis we examine two notions of stability: that of neural network dynamics models and the training of reinforcement learning algorithms. There is a natural transition from the first notion of stability to the second is natural: the parameters of a stably trained model circumscribes, in parameter-space, a stable trajectory.
+This relationship between stabilities has significant precedence in the foundational work of Temporal Difference (TD) learning theory \cite{tsitsiklis1996analysis}.
 
-In the first chapter we propose a new method for learning Lyapunov-stable dynamical models and the certifying Lyapunov function in a fully end-to-end manner.
-This works by carefully constructing a neural network to act as a Lyapunov function and learning a separate, unconstrained model. These two models are combined with a novel reprojection layer to produce models that are guaranteed stable by construction, even without any training. We show that such learning systems are able to model simple dynamical systems such as pendulums, and can be combined with additional deep generative models to learn complex dynamics, such as video textures, in a fully end-to-end fashion, given Temporal Difference (TD) data.
+In the first chapter we propose a new method for learning Lyapunov-stable dynamical models and the certifying Lyapunov function in a fully end-to-end manner. Instead of enforcing stability by some loss function, we guarantee stability everywhere by construction.
+This works by carefully constructing a neural network to act as a Lyapunov function, learning a separate, unconstrained dynamics model, and then combining these two models with a novel reprojection layer. This produces models that are guaranteed stable by construction everywhere in the state space, even without any training. We show that such learning systems are able to model simple dynamical systems such as pendulums, and can be combined with additional deep generative models to learn complex dynamics, such as video textures, in a fully end-to-end fashion.
 
-Next, we attempted to extend this work to learn control policies that produce stable trajectories. This is a natural extension of the previous work, equivalent to only minor changes to the construction of the dynamics model. Our work necessarily learned from TD data collected by a different policy (i.e. offline). Despite immense effort and many experiments, this technique never converged to reasonable solutions, even with regularization. This led to the insights in the second chapter.
+In modern Reinforcement Learning, TD is combined with function approximation (i.e. neural networks) and off-policy learning. However, these three are known as the \emph{deadly triad} \cite[p.~264]{sutton2020reinforcement}, because they may cause severe instability in the learning process \citet{tsitsiklis1996analysis}. While many variants of TD will provably converge despite the training instability, the quality of the solution at convergence is typically arbitrarily poor \citep{kolter2011fixed}. In the literature, there is a general belief that regularization can mitigate this instability, which is supported by basic analysis on the three standard examples.
 
-TD is combined with function approximation (i.e. neural networks) and off-policy learning in modern Reinforcement Learning. However, these three ingredients are known as the \emph{deadly triad} \cite[p.~264]{sutton2020reinforcement}, because they are known to cause severe instability in the learning process \citet{tsitsiklis1996analysis}. While many variants of TD will provably converge despite the training instability, the quality of the solution at convergence is typically arbitrarily poor \citep{kolter2011fixed}. In the literature, there is a general belief that regularization can mitigate this instability, which is supported by basic analysis on the three standard examples.
+However, this is not true! In the second chapter, we introduce a series of new counterexamples that are resistant to regularization. We demonstrate the existence of ``vacuous'' examples, which never do better than the limiting case regardless of the amount of regularization. This problem persists in most TD-based algorithms, which covers a wide swath of the RL literature; we make our analysis concrete by showing how this example forces the error bounds derived by \citet{zhang2021breaking} to be extremely loose in practice. We further demonstrate that regularization is not monotonic in TD contexts, and that it is possible for regularization to increase error (or cause divergence) around some critical values. We extend these examples to the neural network case showing that these effects are not limited to the linear case and making the case for greater care in regularization in practical RL applications. Finally, there is a line of work starting with Emphatic-TD which seeks to stabilize off-policy training by resampling TD updates to appear on-policy. Contemporary Emphatic algortihms generally use a reversed version of TD to estimate the resampling function, which opens them up to instability from the same source as the original TD. We show that these techniques are similarly vulnerable. We show that regularization is not a panacea for stability in TD learning.
 
-However, this is not true! In the second chapter, we introduce a series of new counterexamples that are resistant to regularization. We demonstrate the existence of ``vacuous'' examples, which never do better than the limiting case regardless of the amount of regularization. This problem persists in most TD-based algorithms, which covers a wide swath of the RL literature; we make our analysis concrete by showing how this example forces the error bounds derived by \citet{zhang2021breaking} to permit vacuous solutions. We further demonstrate that regularization is not monotonic in TD contexts, and that it is possible for regularization to increase error (or cause divergence) around some critical values. We extend these examples to the neural network case, showing that these effects are not limited to the linear case and making the case for greater care in regularization in practical RL applications. Finally, contemporary versions of Emphatic-TD generally use a reversed version of TD to estimate the resampling function, which opens them up to instability from the same source as the original TD. We show that these techniques are similarly vulnerable. We show that regularization is not a panacea for stability in TD learning.
-
-
-In the third chapter, we investigate new methods for stable TD learning that are resistant to off-policy divergence and that do not rely on regularization. Starting from previous work by \citet{kolter2011fixed}, we derive Projected Off-Policy TD, which reweighs TD updates to the closest distribution where the TD is non-expansive at the fixed point of its training. We learn the reweighing factors in-the-loop with vanilla TD methods (i.e. optimized as an augmented objective using stochastic gradient descent) and then apply those reweighing factors to each TD update. Crucially, this is distinct from contemporary work in the literature in that POP-TD does not resample to on-policy distribution, instead finding a ``safe'' distribution close to the data distribution. Applying this to a novel offline RL example, we can clearly demonstrate how POP-TD mitigates the \emph{distributional shift} between the dataset and the learned policy \cite{levine2020survey} while resampling as little as possible.
+In the third chapter, we investigate new methods for stable TD learning that are resistant to off-policy divergence. Starting from an idea introduced by \citet{kolter2011fixed} we derive Projected Off-Policy TD, which reweighs TD updates to the closest distribution where the TD is non-expansive at the fixed point of its training. We learn the reweighing factors in the training loop using stochastic gradient descent (i.e. with time- and space-complexity comparable to learning the value function) and then apply those reweighing factors to each TD update. Crucially, this is distinct from contemporary work in the literature in that POP-TD does not resample to on-policy distribution, instead finding a ``safe'' distribution close to the data distribution. Applying this to a novel offline RL example, we can clearly demonstrate how POP-TD mitigates the \emph{distributional shift} between the dataset and the learned policy \cite{levine2020survey} while resampling as little as possible.
 
 We conclude with a discussion on future directions that our work on stable models may take.
 
