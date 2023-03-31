@@ -1,6 +1,6 @@
 \input{poptd/colorglyphs.tex}
 
-A key problem in offline Reinforcement Learning (RL) is the mismatch between the dataset and the distribution over states and actions visited by the learned policy, called the \emph{distribution shift}. This is typically addressed by constraining the learned policy to be close to the data generating policy, at the cost of performance of the learned policy. We propose Projected Off-Policy TD (POP-TD), a new critic update rule that resamples TD updates to allow the learned policy to be distant from the data policy without catastrophic divergence. We show how this algorithm works on a well-understood toy example from the literature, and then characterize its performance with varying parameterization on a specially-constructed offline RL task. This is a novel approach to stabilizing off-policy RL, and sets the stage for future work on larger tasks.
+A key problem in offline Reinforcement Learning (RL) is the mismatch between the dataset and the distribution over states and actions visited by the learned policy, called the \emph{distribution shift}. This is typically addressed by constraining the learned policy to be close to the data generating policy, at the cost of performance of the learned policy. We propose Projected Off-Policy TD (POP-TD), a new critic update rule that resamples TD updates to allow the learned policy to be distant from the data policy without catastrophic divergence. Unlike Emphatic-TD and the importance sampling literature, we resample to any ``safe'' distribution, not necessarily the on-policy. We show how this algorithm works on a well-understood toy example from the literature, and then characterize its performance with varying parameterization on a specially-constructed offline RL task. This is a novel approach to stabilizing off-policy RL, and sets the stage for future work on larger tasks.
 
 \emph{Paper in preparation, by \citeauthor{manek2023poptd} (\citeyear{manek2023poptd})}
 
@@ -9,12 +9,12 @@ A key problem in offline Reinforcement Learning (RL) is the mismatch between the
 
 \section{Introduction}
 
-Reinforcement Learning (RL) aims to learn policies that maximize rewards in Markov Decision Processes (MDPs) through interaction, generally using Temporal Difference (TD) methods. In contrast, offline RL focuses on learning optimal policies from a static dataset sampled from an unknown policy, possibly a policy designed for a different task. Thus, algorithms are expected to learn without the ability to interact with the environment.
+Reinforcement Learning (RL) aims to learn policies that maximize rewards in Markov Decision Processes (MDPs) through interaction, generally using Temporal Difference (TD) methods. In contrast, offline RL focuses on learning optimal policies from a static dataset sampled following an unknown policy, possibly a policy designed for a different task. Thus, algorithms are expected to learn without the ability to interact with the environment.
 This is useful in environments that are expensive to explore (such as running a Tokamak nuclear reactor \cite{degrave2022magnetic}), or high-dimensional environments with cheap access to expert or near-expert trajectories (such as video games). \citet{levine2020survey} present a comprehensive survey of the area.
 
 Since in offline RL the data is gathered before training begins, there is a mismatch between the the state-distributions implied by the learned policy and the data.
 When applying naive RL algorithms in this setting, they tend to bootstrap from regions with little or no data, causing runaway self-reinforcement.
-Offline RL algorithms like Conservative Q-Learning (CQL) \cite{kumar2020cql}, on the other hand, generally constrain the learned policy to remain within the support of the data. While this works well in practice, there still remains a large gap in performance between online and offline RL. One reason for this is an additional subtlety to distribution shift: because of the combination of off-policy RL and function approximation, it is possible for RL to diverge if the generating policy and the learned policy are sufficiently different.
+Offline RL algorithms like Conservative Q-Learning (CQL) \cite{kumar2020cql} generally constrain the learned policy to remain within the support of the data. While this works well in practice, there still remains a large gap in performance between online and offline RL. One reason for this is an additional subtlety to distribution shift: because of the combination of off-policy RL and function approximation, it is possible for RL to diverge if the generating policy and the learned policy are sufficiently different even if the data has full support for the learned policy.
 
 \begin{figure}[t]
   \centering
@@ -25,7 +25,6 @@ Offline RL algorithms like Conservative Q-Learning (CQL) \cite{kumar2020cql}, on
 
 We illustrate a simple case in Figure~\ref{fig:sopmap}, where a simple grid environment is designed to elicit the shortest trajectory from start (S) to goal (G). Agents can move one step in each cardinal direction, reaching the goal yields a unit reward, and the episode ends on reaching the goal or any marked cell (X). We generate a dataset by following a suboptimal data policy ({\color{datapolicy} \datapolicyglyph}) with sufficient dithering to guarantee that every state-action pair is represented. If we use a tabular Q-function, we can recover the optimal policy ({\color{optimpolicy} \optimpolicyglyph}) and obtain the true value function. When we use a linear Q-function, however, the error is much larger. We find that about half of random initializations lead to Q-functions that either diverge or converge to large error. This shows how even with full coverage of states and actions, distribution shift can be a significant source of error. We provide more details in Section~\ref{sec:expsimpleoffpolicy}.
 
-\paragraph{Contributions}
 In this chapter, we introduce POP-TD, a novel method of mitigating the error from off-policy learning. We show theoretically that this method bounds the off-policy approximation error for TD-based RL methods. We illustrate the resampling process on a well-known toy example, and then demonstrate its effectiveness on an example of offline RL under distribution shift.
 
 \section{Related Work}
@@ -41,13 +40,13 @@ The second line started with Emphatic-TD, in which \citet{sutton2016emphatic} no
 \paragraph{Off-Policy and Offline Deep RL}
 
 Nearly all modern TD-based deep RL methods perform off-policy learning in practice.
-To improve data efficiency and learning stability, an experience replay buffer is often used. This buffer stores samples from an outdated version of the policy \citep{mnih2015humanlevel}.
+To improve data efficiency and learning stability, an experience replay buffer is often used. This buffer stores samples from previous versions of the policy \citep{mnih2015humanlevel}, and so the distribution of the data is not on-policy for the current version of the policy.
 Additionally, exploration policies, such as a epsilon greedy \citep[p.~100]{sutton2020reinforcement} or Soft Actor Critic (SAC)-style entropy regularization \citep{haarnoja2018soft} \footnote{While the original SAC algorithm is technically on-policy since it learns an entropy-regularized value function, the entropy-regularization is often dropped from the value-function estimate in practice to improve performance.}, are often used, which also results in off-policy learning.
 In practice, the difference between the current policy and the samples in the buffer is limited by setting a limit to the buffer size and discarding old data; or by keeping the exploration policy relatively close to the learned policy. In practice, this is sufficient to prevent outright divergence, though the extent to which it decreases performance is not well-understood.
 
 However, in the offline RL setting where training data is static, there is usually a much larger discrepancy between the state-action distribution of the data and the distribution induced by the learned policy.
 This discrepancy presents a significant challenge for offline RL \citep{levine2020survey}.
-While this distributional discrepancy is often presented as a single challenge for offline RL algorithms, there are two distinct aspects of this challenge that can be addressed independently: \textit{support mismatch} and \textit{proportional mismatch}.
+While this distributional discrepancy is often presented as a single challenge for offline RL algorithms, it is convenient to separate the two distinct aspects of this challenge and address them independently: \textit{support mismatch} and \textit{proportional mismatch}.
 When the support of the two distributions differ, learned value functions will have arbitrarily high errors in low-data regions.
 Support mismatch is dealt with by either constraining the KL-divergence between the data and learned policies \citep{fujimoto2019off, kumar2019stabilizing, wu2019behavior}, by penalizing or pruning low-support (or high-uncertainty) actions \citep{kumar2020cql, yu2020mopo, kidambi2020morel}.
 
@@ -65,21 +64,21 @@ In this work, we propose a new method to bound the value-function approximation 
 
 \section{Problem Setting and Notation }
 
-Consider the $n$-state Markov chain $(\mathcal S, P, R, \gamma)$, with state space $\mathcal S$, transition function $P : \mathcal{S} \times \mathcal{S} \to \mathbb{R}_+$, reward function $R : \mathcal S \to \mathbb R$, and discount factor $\gamma \in [0, 1]$.
+Consider the $n$-state Markov chain $(\mathcal S, P, R, \gamma)$, with finite state space $\mathcal S$, transition function $P : \mathcal{S} \times \mathcal{S} \to \mathbb{R}_+$, reward function $R : \mathcal S \to \mathbb R$, and discount factor $\gamma \in [0, 1]$.
 % $P \in \mathbb R^{n\times n}$ is the transition matrix, with $P_{ij}$ encoding the probability of moving from state $i$ to $j$.
 Because the state-space is finite, it can be indexed as $\mathcal{S} = \{1, \ldots, n\}$.
 This allows us to use matrix rather than operator notation.
 The expected $\gamma$-discounted future reward of being in each state $V(s) \coloneqq \E \left[\left.\sum_{t=0}^\infty \gamma^t R(s_t) \right| s_0 = s \right]$ is called the value function.
 The value function is consistent with Bellman's equation (in matrix form):
 \begin{align}
-  V = R + \gamma P V .
+  V = R + \gamma P V
 \end{align}
 In the linear setting, we approximate the value function as $V(s) \approx w^\top \phi(s)$, where $\phi : \mathcal S \to \mathbb R^{k}$ is a fixed basis function and we estimate parameters $w \in \mathbb R^k$. In matrix notation, we write this as $V \approx \Phi w$.
 
 In this work, we are interested in the offline learning setting, where the sampling distribution $\mu$ differs from the stationary distribution $\nu$.
-In this setting, the TD solution is:
+In this setting, the previous equation is insufficient. We need to account for the function approximation, and so the TD solution is:
 \begin{align}
-  \Phi w & = \Pi_{\mu} (R + \gamma P \Phi w) ,
+  \Phi w & = \Pi_{\mu} (R + \gamma P \Phi w)
 \end{align}
 where $\Pi_\mu = \Phi(\Phi^\top D_{\mu} \Phi)^{-1}\Phi^\top D_{\mu}$ is the projection onto the column space of $\Phi$ weighted by the data distribution $\mu$ through the matrix $D_{\mu} = \diag(\mu)$. This projection may be arbitrarily far from the true solution, and so the error may be correspondingly large. The literature bounds the error as:
 \begin{theorem}
@@ -90,12 +89,12 @@ where $\Pi_\mu = \Phi(\Phi^\top D_{\mu} \Phi)^{-1}\Phi^\top D_{\mu}$ is the proj
 \end{theorem}
 
 \subsection{The Non-Expansion Criterion (NEC)}
-Thus far we have left open the notion of a ``safe'' distribution to resample TD updates to. The on-policy distribution must be safe, but we need to establish a criteria for acceptable off-policy distributions. \citeauthor{tsitsiklis1996analysis} lay the groundwork for this by analyzing the training of on-policy TD as a dynamical system and showing that once TD reaches its fixed point, subsequent TD updates form a non-expansive mapping around that fixed point (\citeyear[lemma 4]{tsitsiklis1996analysis}), and therefore prove that on-policy TD does not diverge.
+Thus far we have left open the notion of a ``safe'' distribution to resample TD updates to. The on-policy distribution is always safe, but we need to establish some criterion for ``safe'' off-policy distributions. \citeauthor{tsitsiklis1996analysis} lay the groundwork for this by analyzing the training of on-policy TD as a dynamical system and showing that once TD reaches its fixed point, subsequent TD updates form a non-expansive mapping around that fixed point (\citeyear[lemma 4]{tsitsiklis1996analysis}), and therefore prove that on-policy TD does not diverge.
 
 To do this, they begin with the fact that error bounds from on-policy TD follow the property that the $D-$norm of any vector $x \in \mathbb R^n$ is non-expansive through the transition matrix. That is: $\|Px\|_D \leq \|x\|_D$, where $D = \diag(\pi)$. \citet{kolter2011fixed} extend this analysis to the off-policy case, deriving a linear matrix inequality (LMI) under which the TD updates are guaranteed to be non-expansive around the fixed point. This is the Non-Expansion Criterion (\citeyear{kolter2011fixed}):
 \begin{align}
   \|\Phi w - V\|_D                  & \leq \frac{1 + \gamma \kappa(D^{-\sfrac{1}{2}}D^{\sfrac{1}{2}})}{1 - \gamma} \|\Pi_D V - V\|_D
-  \intertext{From this bound, he derives \emph{The non-expansion criterion}:}
+  \intertext{From this bound, he derives the \emph{non-expansion criterion} (NEC):}
   \|\Pi_D P\Phi w\|_D               & \leq \|\Phi w\|_D \qquad (\forall w \in \mathbb R^n) \label{eqn:kolterthm2bound}
   \intertext{This holds if and only if the matrix $F_D$ is positive semi-definite}
   F_D                               & \equiv \begin{bmatrix}
@@ -108,28 +107,28 @@ To do this, they begin with the fact that error bounds from on-policy TD follow 
                                                 \phi(s')\phi(s)^\top & \phi(s)\phi(s)^\top
                                               \end{bmatrix}\right] \succcurlyeq 0 . \label{eqn:knec}
 \end{align}
-This constraint describes a convex subset of $D$. As a $2k\times 2k$ matrix (where $k$ is the number of features), $F$ is prohibitively large to enumerate for any real RL problem, and so our algorithm is designed to make use of this without ever constructing it directly. Further, we notice that the construction of $F_D$ depends on $P$, the transition matrix of the underlying Markov process, which complicates how we construct it from samples.
+This constraint describes a convex subset of $D$. As a $2k\times 2k$ matrix (where $k$ is the number of features), $F$ is prohibitively large to enumerate for any real RL problem, and so our algorithm is designed to make use of this without ever constructing it directly. Further, we notice that the construction of $F_D$ depends on $P$, the transition matrix of the underlying Markov process, which makes our algorithm more complex.
 
 For convenience, we write this as:
 \begin{align}
-   & \E_{s\sim q}  [F(s)] \succcurlyeq 0 \text{, where}                            \\
+   & \E_{s\sim q}  [F(s)] \succcurlyeq 0 \text{, where} \label{eqn:fmatrix}        \\
    & F(s) = \E_{s'\sim p(s'|s)}  \left[\begin{bmatrix}
                                            \phi(s)\phi(s)^\top  & \phi(s)\phi(s')^\top \\
                                            \phi(s')\phi(s)^\top & \phi(s)\phi(s)^\top
-                                         \end{bmatrix}\right] . \label{eqn:fmatrix}
+                                         \end{bmatrix}\right]  \nonumber
 \end{align}
-KNEC is an expectation over some state distribution $q$ and transition distribution $p(s,s') = p(s'|s) \mu(s)$. Because it is an LMI, the satisfying state distributions $q$ form a convex subset.
+NEC is an expectation over some state distribution $q$ and transition distribution $p(s,s') = p(s'|s) \mu(s)$. Because it is an LMI, the satisfying state distributions $q$ form a convex subset.
 
-Directly constructing $F(s)$ or $F(s, s')$ is impossible on all but the simplest examples -- it would take $\mathcal O(k^2n)$ or $\mathcal O(k^2n^2)$ memory to hold all the necessary data. Instead we exploit the structure inherent in the problem to make use of $F(s)$ without creating it.
+Directly constructing $F(s)$ or $F(s, s')$ is impossible on all but the simplest examples -- it would take $\mathcal O(k^2n)$ or $\mathcal O(k^2n^2)$ memory respectively to hold all the necessary data. Instead we exploit the structure inherent in the problem to make use of $F(s)$ without creating it.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Projected Off-Policy TD (POP-TD) }
 
-We propose an alternative approach to stabilizing off-policy training, based on the Non-Expansion Criterion \citep{kolter2011fixed}. POP-TD identifies a convex set of ``safe'' distributions that satisfy KNEC and reweighs TD updates to come from that set. In contrast to TD-DO, POP-TD uses solves a different optimization problem using a two-timescales update with fixed cost per iteration, allowing it to scale to real-world problems.
+We propose an alternative approach to stabilizing off-policy training, based on the NEC by \citet{kolter2011fixed}. POP-TD identifies a convex set of ``safe'' distributions that satisfy NEC and reweighs TD updates to come from that set. In contrast to TD-DO, POP-TD solves a different optimization problem using a two-timescales update with fixed cost per iteration, allowing it to scale to real-world problems.
 
-We begin by deriving the projected off-policy update for Markov Chains, without a separate policy function. We will extend this derivation to support actions and Markov Decision Processes (MDPs) in Section~\ref{sec:popq}. Our algorithm resamples TD updates so they come from some distribution $q$ for which KNEC holds. Given input data $(x_1, x_2, \ldots)$, this is the same as finding a set of weights $q_1, q_2, \ldots$ such that
+We begin by deriving the projected off-policy update for Markov Chains without a separate policy function. We will extend this derivation to support actions and Markov Decision Processes (MDPs) in Section~\ref{sec:popq}. Our algorithm resamples TD updates so they come from some distribution $q$ for which the NEC holds. Given input data $(x_1, x_2, \ldots)$, this is the same as finding a set of weights $q_1, q_2, \ldots$ such that
 \begin{align}
   \sum_i q_i & \cdot F(x_i) \succcurlyeq 0
 \end{align}
@@ -163,7 +162,7 @@ Writing down Lagrangian and solving for the optima, we obtain:
 \begin{align}
   q^*(s) & \propto \mu(s)\exp( \tr Z^\top F(s))
 \end{align}
-(Subject to the constraint that $q^*(s)$ is normalized so it must sum to 1 over all $s$.)
+(Subject to the normalization constraint that $\sum_{s\in \mathcal S}q^*(s) = 1$.)
 
 Plugging this back into our dual formulation, we obtain the optimization problem:
 \begin{align}
@@ -181,7 +180,7 @@ Our next goal is to transform this constrained optimization problem into an unco
 
 We assume (and later check!) that the solution for $Z$ is low-rank. Intuitively, this is because $\E_{s\sim\mu}[F(s)]$ is PSD when $\mu$ is close to $\pi$, and for most MDPs, sampling off-policy leads to only a small number of negative eigenvalues that need to be corrected by $Z$. \citet{kolter2011fixed} provides a technical explanation: by the KKT conditions, $Z$ will have rank complementary to $\E_{s\sim\mu}[F(s)]$, and the latter is expected to be full rank. It is worth noting that this ``almost-PSD'' assumption is common in the field.
 
-We make the strong assumption that $Z$ has rank $m$, where $m << k$. We apply the Burer-Montiero approach \citep{burer2003nonlinear} to convert the constrained optimization problem over $Z$ into an unconstrained optimization over matrices $A\in \mathbb R^{k\times m}$ and $B\in \mathbb R^{k\times m}$:
+We make the mild assumption that $Z$ has rank $m$, where $m << k$. We apply the Burer-Montiero approach \citep{burer2003nonlinear} to convert the constrained optimization problem over $Z$ into an unconstrained optimization over low-rank matrices $A\in \mathbb R^{k\times m}$ and $B\in \mathbb R^{k\times m}$:
 \begin{align}
   Z^\star & = \begin{bmatrix} A \\ B \end{bmatrix} \begin{bmatrix} A \\ B\end{bmatrix}^T
 \end{align}
@@ -223,7 +222,7 @@ where the small parameters $A$ and $B$ can be optimized with regular gradient-de
 
 \subsection{Update rules}
 
-We can't directly optimize our problem because that would require us to estimate the inner expectation term. Instead, we use a two-timescales approach by estimating two (dependent) quantities separately and improving them at potentially different rates. This (with a little tuning) can generally converge to a valid solution.
+We can't directly optimize our problem because that would require us to estimate the inner expectation term. Instead, we use a two-timescales approach by estimating two mutually-dependent quantities separately and improving them at potentially different rates. This generally converges to a valid solution with a little tuning.
 
 We choose to estimate the matrices $A, B \in \mathbb R^{k\times m}$ and separately the function $g_\theta : \mathcal S \in \mathbb R$ where
 \begin{align}
@@ -250,9 +249,9 @@ This corresponds to the auxiliary loss term for $A, B$:
   \right)^2
 \end{align}
 
-And finally, to complete this, we multiply each update of $w$ by $\exp(g(s))$ to resample it so it appears to come from the ``safe'' distribution, which completes the description of the algorithm!
+And finally, when updating the value function weights $w$, we multiply the loss associated with each transition by $\exp(g(s))$ to resample it so it appears to come from the ``safe'' distribution, which completes the description of the algorithm!
 
-\paragraph{Computing the loss} A naive implementation of the loss function will require intermediate matrices of size $[k\times k]$. We can improve speed by computing the loss in terms of $[m\times 1]$ intermediates instead. For some $(s, s')$, this can be done as:
+\paragraph{Computing the loss} A naive implementation of the loss function will require intermediate matrices of size $[k\times k]$. We can improve speed by computing the loss in terms of $[m\times 1]$ intermediates instead. For a transition sample $(s, s')$, this can be done as:
 \begin{align}
   M_A & = A^T \phi(s) \in \mathbb R^{m} \nonumber
   \\  M_A' & = A^T \phi(s') \in \mathbb R^{m} \nonumber
@@ -265,19 +264,19 @@ And finally, to complete this, we multiply each update of $w$ by $\exp(g(s))$ to
       \right ]
   \right)^2
 \end{align}
-where $\cdot$ is the dot product. This sequence of operations should be $\mathcal O(m k)$, which is much quicker than the naive $\mathcal O(m k^2)$.
+where $\cdot$ is the dot product. With tabular $g$, this sequence of operations should be $\mathcal O(m k)$, which is much quicker than the naive $\mathcal O(m k^2)$.
 
 \subsection{POP-Q-Learning}\label{sec:popq}\label{sec:pop-q-derivation}
 
 Thus far, we have focused on Markov Reward Processes.
 For RL problems, we need to extend this approach to Markov Decision Processes (MDPs).
 % We now extend this from simple Markov chains to MDPs by incorporating actions into it.
-An MDP is a tuple, $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$, with state space $\mathcal S$, transition function $P : \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}_+$, reward function $R : \mathcal S \times \mathcal{A} \to \mathbb R$, and discount factor $\gamma \in [0, 1]$.
+An MDP is a tuple, $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$, with state space $\mathcal S$, probabilitistic transition function $P : \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}_+$, reward function $R : \mathcal S \times \mathcal{A} \to \mathbb R$, and discount factor $\gamma \in [0, 1]$.
 The goal in this setting is to find a probabilistic policy $\pi : \mathcal{S} \times \mathcal{A} \to \mathbb{R}_+$ that maximizes the future discounted reward:
 \begin{equation}
   \pi^\star = \argmax_\pi \E_\pi \left [ \sum_{t=0}^\infty \gamma^t R(s_t, a_t) \right ]
 \end{equation}
-Many RL methods use variations of Q-learning \cite{watkins1992q,mnih2015humanlevel,haarnoja2018soft,kumar2020cql}, which involves learning a state-action value function, or $Q$-function:
+Many RL methods use some variation of Q-learning \cite{watkins1992q,mnih2015humanlevel,haarnoja2018soft,kumar2020cql}, which involves learning a state-action value function commonly called a $Q$-function:
 \begin{equation}
   Q^\pi(s, a) = \E_\pi \left[\left.\sum_{t=0}^\infty \gamma^t R(s_t, a_t) \right| s_0 = s, a_0 = a \right]
 \end{equation}
@@ -288,7 +287,7 @@ See \cref{sec:pop-q-derivation} for a detailed derivation.
 
 Finally, for our method to applied to modern deep RL problems, we must extend our approach to non-linear Q-functions.
 To do so, we approximate the Q-function with a neural network, $Q_{\theta^Q}$ parameterized by $\theta^Q$ and consider a stochastic parameterized policy $\pi_{\theta^\pi}$.
-To update $Q_{\theta^Q}$, we used a squared Bellman loss, $\mathcal{L}_Q(\theta^Q) = (Q_{\theta^Q}(s, a) - r - \gamma Q_{\theta^Q}(s', \pi_{\theta^\pi}(s')))^2$, which we reweigh with $e^{g(s)}$ as before.
+To update $Q_{\theta^Q}$, we used a squared Bellman loss, $\mathcal{L}_Q(\theta^Q) = (Q_{\theta^Q}(s, a) - r - \gamma Q_{\theta^Q}(s', \pi_{\theta^\pi}(s')))^2$, which we reweigh with $\exp(g(s))$ as before.
 For our offline RL experiments, we also add CQL regularization \citep{kumar2020cql} to our Q-learning updates to prevent over-optimism on low-support regions of the state-action space.
 To update our linear dual variables $y$, we use the penultimate layer of $Q_{\theta^Q}$ as our feature vector.
 Finally, we use a SAC-style entropy regularized loss to update our policy network, $\pi_{\theta^\pi}$.
@@ -322,7 +321,7 @@ Finally, we use a SAC-style entropy regularized loss to update our policy networ
 We first apply POP-TD to a well-understood example so that we can directly illustrate the how it resamples TD updates to a ``safe'' distribution. We use the simple three-state task from \cref{fig:threestate}, including the specified transition function, value function, and basis. Since this is a policy evaluation task, there is no policy to be separately learned.
 
 For illustration purposes, we select the family of distributions $\pi = (\sfrac h 2, \sfrac h 2, 1- h)$ parameterized by $h \in [0, 1]$.
-This characterizes the possible distributions of data that we will present to POP-TD and naive TD in this experiment. The on-policy distribution corresponds to $h_o\approx 0.51$, and divides the family of distributions into a left subset ($h \leq h_o$) where KNEC holds and a right subset ($h_o > 0.5$) where KNEC does not. This is immediately apparent in \cref{fig:threestate}, where we plot the error at convergence from running naive- and POP-TD above, and the effective distribution of TD updates after reweighing below.
+This characterizes the possible distributions of data that we will present to POP-TD and naive TD in this experiment. The on-policy distribution corresponds to $h_o\approx 0.51$, and divides the family of distributions into a left subset ($h \leq h_o$) where the NEC holds and a right subset ($h > h_o$) where it does not. This is immediately apparent in \cref{fig:threestate}, where we plot the error at convergence from running naive- and POP-TD above, and the effective distribution of TD updates after reweighing below.
 In the left subset, where KNEC holds, POP-TD does not resample TD updates at all. Therefore, the error of POP-TD tracks naive TD (top), and the effective distribution of TD updates in POP-TD and naive TD are the same as the data distribution (bottom).
 
 In the right subset, we observe that naive TD converges to poor solutions with large error while POP-TD is able to learn with low error.
@@ -375,7 +374,9 @@ Throughout this chapter we have drawn a distinction between importance sampling/
 
 \subsubsection[Results with a linear g]{Results with an approximate, linear $g$}
 
-A key step in adopting POP-Q is ensuring that all parameters are at most order $\mathcal O(k)$ (i.e. comparable to the size of the learned weights) and are therefore learnable with the same time and space as regular TD. The matrices $A$ and $B$ are sized $k\times m$, where $m << k$, and so are sufficiently small. We now need to approximate $g$ as a linear function with fixed bases vectors $\Phi_g = (\phi_{g,1}, \phi_{g,2}, ..., \phi_{g,n})$ and learned weights $w_g \in \mathbb R^{l}$ of size $l < n$:
+The current experiments with POP-Q learning all use a tabular g. This works, but takes the same memory as would learning a tabular value function, which would provably converge to the global optimum (side-stepping the entire problem). A key step in adopting POP-Q is ensuring that all parameters are at most order $\mathcal O(k)$ (i.e. comparable to the size of the learned weights) and are therefore learnable with the same order of time and space as regular TD. We also wish to (eventually) exploit the generalization afforded to us by neural networks, to hopefully learn more accurate models with less data.
+
+The matrices $A$ and $B$ are sized $k\times m$, where $m << k$, and so are sufficiently small. We now need to approximate $g$ as a linear function with fixed bases vectors $\Phi_g = (\phi_{g,1}, \phi_{g,2}, ..., \phi_{g,n})$, $\phi_{g,\circ}\in \mathbb R^l$ and learned weights $w_g \in \mathbb R^{l}$ of size $l < n$:
 \begin{align}
   g(s) = \phi_{g, s} \cdot w_g
 \end{align}
@@ -392,72 +393,8 @@ Figure~\ref{fig:linearerr} reveals that the performance of POP-Q is (as expected
   \label{fig:linearerr}
 \end{figure}
 
-
-\subsection{Linear POP-Q on GridWorld}
-
-The current experiments with POP-Q learning all use a tabular g. This works, but takes the same memory as would learning a tabular value function, which would provably converge to the global optimum (side-stepping the entire problem).
-
-Currently, we are evaluating POP-Q with approximate $g$ on our GridWorld example. We are running an ablation study to understand the relationship between the degree of approximation of $g$ and the performance of the resultant system.
-
-
-This is a similar experiment to that in \cref{sec:expsimpleoffpolicy}, but with linear approximation. One key step on the road to getting POP-Q to work on larger experiments is to understand the behavior of POP-Q under function approximation. Function approximation is necessary because, in the tabular case, POP-Q uses as much memory as a tabular Q-learning algorithm would; this is intractable for most practical problems. We also wish to exploit the generalization afforded to us by neural networks, to hopefully learn more accurate models with less data.
-
-In this experiment, we define $g_\phi : \mathcal S \to \mathbb R$ as:
-\begin{align}
-  g_\phi & = \Phi_g \theta^g
-\end{align}
-for basis $\Phi_g \in \mathbb R^{n\times m}$ and learned weights $\theta^g \in \mathbb R^{m}$. We are given some random $\Phi_g$ and wish to learn $\theta^g$ so that $g_\phi$ acts as the reweighing function of POP-TD.
-
-We conduct a series of experiments to understand the relationship between the degree of function approximation in $g$ and the quality of the learned model. Our example is engineered so that the ratio of two specific transitions (where the two trajectories initially diverge) most determines stability.
-
-When performing experiments, we note that the performance of POP-TD depends sharply on the condition number of $\Phi$, but not necessarily that of $\Phi_g$. Specifically, we see that an orthogonal initialization step on $\Phi$ is crucial for performance. (In this step we set $\Phi$ to the orthogonal matrix of the QR-decomposition of a matrix where entries are sampled uniformly at random.)
+\paragraph{A note on initialization} When performing experiments, we note that the performance of POP-TD depends sharply on the condition number of $\Phi$, but not necessarily that of $\Phi_g$. Specifically, we see that an orthogonal initialization step on $\Phi$ is crucial for performance. (In this step we set $\Phi$ to the orthogonal matrix of the QR-decomposition of a matrix where entries are sampled uniformly at random.)
 We conjecture that this happens because POP-TD seeks to stochastically learn $\Phi^T A \Phi$, and a poor condition number of $\Phi$ leads to values that span multiple orders of magnitude and linear approximation is known to perform poorly on such data.
-
-\begin{comment}
-
-While preliminary results are promising, we need to adapt this to standard RL tasks to showcase its effectiveness.
-
-\subsection{D4RL Random Datasets}
-
-\begin{figure}[t]
-  \centering
-  \input{poptd/d4rl/halfcheetah.tex}
-  \caption{
-    POP-Q learning performs slightly but significantly better than naive Q learning on this run of the D4RL dataset \texttt{halfcheetah-random-v2}. The plot is smoothed, and shaded sections represent the standard error over 8 seeds. POP-Q may help us deal with datasets generated by vastly different policies.}
-  \label{fig:d4rl}
-\end{figure}
-
-Offline RL is a perfect application for our method.
-As discussed earlier, POP-Q reweighing specifically addresses \textit{proportional mismatch} as opposed to \textit{support mismatch}.
-For this reason, we combine our method with the state-of-the-art method for addressing support mismatch in offline RL settings.
-Specifically, we augment Conservative Q-Learning (CQL) \citep{kumar2020cql} with our projected off-policy technique.
-The resultant algorithm, called POP-CQL, parameterizes the Q-function and $g_\theta(s, a)$ as separate neural networks. We still learn a linear $y$, treating the output of the penultimate layer of the Q-function as the basis.
-CQL works by penalizing out-of-distribution actions to ensure the learned policy remains within the support of the data, but it does not directly constrain the distribution over states implied by the policy. The use of POP methods in addition to CQL allows us to mitigate the remaining distribution shift, the proportional mismatch.
-
-We also need to check if our method is better at addressing proportional mismatch than importance sampling. Therefore, we also wish to compare against CQL augmented with DualDICE \citep{nachum2019dualdice}. DualDICE is an importance sampling method that aims to mitigate the challenges of high-variance updates on the importance sampling weights.
-
-
-
-
-\subsection{Mixed-Policy Datasets}
-
-Finally, our POP technique allows us to learn when multiple policies are mixed, even when part of the dataset comes from a potentially adversarial policy. This is especially relevant if we wish to learn from expert-produced data that comes from different experts, or if the dataset may include samples from adversaries.
-
-To illustrate this, we generate a custom dataset in the style of D4RL. Using the \texttt{HalfCheetah} environment from MuJoCo, we combine $60,000$ samples generated by an adversarial policy that runs backwards (achieving $\approx13000$ score per episode) with $140,000$ samples generated by an expert policy (achieving about $11000$ score per episode). The net dataset achieves about 900 score per episode.
-
-We train both CQL and POP-CQL on the resultant dataset and plot the performance in \cref{fig:fwdback}, which shows that POP-CQL performs better on average than CQL in this situation. While the performance of POP-CQL is stable throughout training, the best score ever achieved is by vanilla CQL early in the training process. We need to investigate this further to understand why CQL transiently performs better and see if we can further improve the performance of POP-CQL.
-
-\begin{figure}[t]
-  \centering
-  %\input{poptd/fwdback/fwdback.tex}
-  \includegraphics[width=\textwidth]{poptd/fwdback/mixedexpert.png}
-  \caption{
-    On custom mixed-policy dataset, POP-CQL learning has more consistent performance than naive Q learning, and is better at the limit of training. However, the highest performance achieved is by regular CQL, not POP-CQL. POP-Q can help us deal with datasets generated by vastly different policies, but more work needs to be done.
-  }
-  \label{fig:fwdback}
-\end{figure}
-
-\end{comment}
 
 
 \section{Conclusion}
