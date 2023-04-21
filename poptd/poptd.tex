@@ -322,7 +322,7 @@ We first apply POP-TD to a well-understood example so that we can directly illus
 
 For illustration purposes, we select the family of distributions $\pi = (\sfrac h 2, \sfrac h 2, 1- h)$ parameterized by $h \in [0, 1]$.
 This characterizes the possible distributions of data that we will present to POP-TD and naive TD in this experiment. The on-policy distribution corresponds to $h_o\approx 0.51$, and divides the family of distributions into a left subset ($h \leq h_o$) where the NEC holds and a right subset ($h > h_o$) where it does not. This is immediately apparent in \cref{fig:threestate}, where we plot the error at convergence from running naive- and POP-TD above, and the effective distribution of TD updates after reweighing below.
-In the left subset, where KNEC holds, POP-TD does not resample TD updates at all. Therefore, the error of POP-TD tracks naive TD (top), and the effective distribution of TD updates in POP-TD and naive TD are the same as the data distribution (bottom).
+In the left subset, where the NEC holds, POP-TD does not resample TD updates at all. Therefore, the error of POP-TD tracks naive TD (top), and the effective distribution of TD updates in POP-TD and naive TD are the same as the data distribution (bottom).
 
 In the right subset, we observe that naive TD converges to poor solutions with large error while POP-TD is able to learn with low error.
 Directly computing the effective distribution, we see that naive TD adheres to the data distribution but POP-TD resamples the TD updates.
@@ -334,7 +334,7 @@ This simple experiment cleanly illustrates how POP-TD resamples TD updates to co
 \begin{figure}[t]
   \centering
   \input{poptd/threestate/threestatedistrib.tex}
-  \caption{The error in the learned value function by naive- and POP-TD, plotted against a varying sampling distribution. In the left half of the plot, KNEC holds, and so POP-TD tracks the error of naive TD closely. In the right half of the plot naive TD diverges, while POP-TD resamples the data to a ``safe'' distribution and does not diverge. }
+  \caption{The error in the learned value function by naive- and POP-TD, plotted against a varying sampling distribution. In the left half of the plot, the NEC holds, and so POP-TD tracks the error of naive TD closely. In the right half of the plot naive TD diverges, while POP-TD resamples the data to a ``safe'' distribution and does not diverge. }
   \label{fig:threestate}
 \end{figure}
 

@@ -98,7 +98,7 @@
 \title{
 	{\bf Stable Models and \\ Temporal Difference Learning }}
 \author{{\bf Gaurav Manek}}
-\date{March 2023}
+\date{April 2023}
 \Year{2023}
 \trnumber{CMU-CS-23-103}
 
@@ -123,7 +123,7 @@
 \begin{abstract}
 	In this thesis, we investigate two different aspects of stability: the stability of neural network dynamics models and the stability of reinforcement learning algorithms. In the first chapter, we propose a new method for learning Lyapunov-stable dynamics models that are stable by construction, even when randomly initialized. We demonstrate the effectiveness of this method on damped multi-link pendulums and show how it can be used to generate high-fidelity video textures.
 
-	In the second and third chapters, we focus on the stability of Reinforcement Learning (RL). In the second chapter, we demonstrate that regularization, a common approach to addressing instability, behaves counterintuitively in RL settings. Not only is it sometimes ineffective, but it can also cause instability. We demonstrate this phenomenon in both linear and neural network settings. Further, stadard resampling methods are vulnerable to the same
+	In the second and third chapters, we focus on the stability of Reinforcement Learning (RL). In the second chapter, we demonstrate that regularization, a common approach to addressing instability, behaves counterintuitively in RL settings. Not only is it sometimes ineffective, but it can also cause instability. We demonstrate this phenomenon in both linear and neural network settings. Further, standard importance sampling methods are also vulnerable to this.
 
 	In the third chapter, we propose a mechanism to stabilize off-policy RL through resampling. Called Projected Off-Policy TD (POP-TD), it resamples TD updates to come from a convex subset of ``safe'' distributions instead of (as in other resampling methods) resampling to the on-policy distribution. We show how this approach can mitigate the distribution shift problem in offline RL on a task designed to maximize such shift.
 
